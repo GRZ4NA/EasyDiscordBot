@@ -1,0 +1,25 @@
+{
+  "name": "easydiscordbot",
+  "version": "1.0.0",
+  "description": "An easy and free way to setup a Discord bot.",
+  "main": "EasyDiscordBot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GRZ4NA/EasyDiscordBot.git"
+  },
+  "keywords": [
+    "discord"
+  ],
+  "author": "GRZANA",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GRZ4NA/EasyDiscordBot/issues"
+  },
+  "homepage": "https://github.com/GRZ4NA/EasyDiscordBot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1"
+  }
+}

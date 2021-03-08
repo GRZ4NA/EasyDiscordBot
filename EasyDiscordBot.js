@@ -17,12 +17,20 @@ class EasyDiscordBot {
             return undefined;
         }
     }
-    start() {
+    async start() {
         console.log(`Bot name: ${this.name}`);
         console.log(`Bot version: ${this.version}`);
         console.log('Based on discord.js library & EasyDiscordBot wrapper created by GRZANA (https://github.com/GRZ4NA)');
-        if(this.isPreRelease) { console.warn('This version is marked as a pre-release version.'); }
+        if(this.isPreRelease) { console.warn('This version is marked as a pre-release version. You may encouter some bug and stability problems.'); }
+        console.log(' ');
+        console.log('Connecting to Discord...');
+        try {
+            await this.client.login(this.discordToken);
+        }
+        catch(e) {
+            console.error('An error occured during login procedure. If this problem persists please check your app token.');
+        }
     }
 }
 
-export default DiscordBot;
+export default EasyDiscordBot;
