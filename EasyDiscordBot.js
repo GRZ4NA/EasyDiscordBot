@@ -83,7 +83,7 @@ class EasyDiscordBot {
                 else {
                     message.command.isCommand = false;
                 }
-                if(message.command.isCommand) {
+                if(message.command.isCommand && !message.author.bot) {
                     this.onCommand(message);
                     const command = this.getCommand(message.command.name);
                     if(command) {
