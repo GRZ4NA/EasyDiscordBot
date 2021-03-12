@@ -88,7 +88,7 @@ class EasyDiscordBot {
                     const command = this.getCommand(message.command.name);
                     if(command) {
                         if(this.permissionsProxy(message, command)) {
-                            command.exec(message);
+                            command.exec instanceof Function ? command.exec(message) : m => { console.error(`The exec property on ${command.name} is not a function`); return; };
                         }
                         else {
                             message.reply(this.responseTable.insufficientPermissions);
@@ -123,7 +123,7 @@ class EasyDiscordBot {
             return;
         }
         this.commandsList.push(commandObject);
-        return this.commandsList.findIndex(c => c.name == commandObject.name);
+        return this.commandsList.find(c => c.name == commandObject.name);
     }
     getCommand(name) {
         try {
@@ -133,19 +133,6 @@ class EasyDiscordBot {
             }
             else {
                 throw new ReferenceError(`Command ${name} does not exist in this instance.`);
-            }
-        }
-        catch (e) {
-            return false;
-        }
-    }
-    getCommandById(id) {
-        try {
-            if(this.commandsList[id]) {
-                return this.commandsList[id];
-            }
-            else {
-                throw new ReferenceError(`Command with id ${id} does not exist in this instance.`);
             }
         }
         catch (e) {
