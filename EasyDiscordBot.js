@@ -23,7 +23,6 @@ class EasyDiscordBot {
             this.name = params.name;
             this.version = params.version ? params.version : "1.0.0";
             this.discordToken = params.discordToken;
-            this.isPreRelease = params.isPreRelease ? params.isPreRelease : false;
             if(params.prefix) {
                 this.prefix = params.prefix.toString();
             }
@@ -59,7 +58,6 @@ class EasyDiscordBot {
         console.log(`Bot version: ${this.version}`);
         console.log(`Bot prefix: ${this.prefix}`);
         console.log('Based on discord.js library & EasyDiscordBot wrapper created by GRZANA (https://github.com/GRZ4NA)');
-        if(this.isPreRelease) { console.warn('This version is marked as a pre-release version. You may encouter some bug and stability problems.'); }
         console.log(' ');
         try {
             if(port) {
