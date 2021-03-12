@@ -90,6 +90,9 @@ class EasyDiscordBot {
                         if(this.permissionsProxy(message, command)) {
                             command.exec(message);
                         }
+                        else {
+                            message.reply(this.responseTable.insufficientPermissions);
+                        }
                     }
                     else {
                         message.reply(this.responseTable.commandNotFound.replace('[command]', message.command.name));
