@@ -38,10 +38,11 @@ class EasyDiscordBot {
                 return;
             }
             this.onMessage = message => {
-
+                console.log(`${message.author.username} (${message.channel.name}): ${message.content}`);
             };
             this.onCommand = command => {
-
+                console.log(`${message.author.username} (${message.channel.name}): ${message.content}`);
+                console.log(message.command);
             }
             this.onError = error => {
                 console.error(error);
