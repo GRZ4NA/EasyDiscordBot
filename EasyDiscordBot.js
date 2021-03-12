@@ -129,7 +129,6 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            console.error(e);
             return false;
         }
     }
@@ -143,7 +142,6 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            console.error(e);
             return false;
         }
     }
