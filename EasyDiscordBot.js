@@ -85,8 +85,19 @@ class EasyDiscordBot {
                 }
                 if(message.command.isCommand) {
                     this.onCommand(message);
-                    if(this.getCommand(message.command.name)) {
-                        this.getCommand(message.command.name).exec(message);
+                    const command = this.getCommand(message.command.name);
+                    if(command) {
+                        if(command.admin) {
+                            if(message.member.hasPermission("ADMINISTRATOR")) {
+                                command.exec(message);
+                            }
+                            else {
+                                message.reply(this.responseTable.insufficientPermissions);
+                            }
+                        }
+                        else {
+                            command.exec(message);
+                        }
                     }
                     else {
                         message.reply(this.responseTable.commandNotFound.replace('[command]', message.command.name));
