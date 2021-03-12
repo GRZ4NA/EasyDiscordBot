@@ -9,7 +9,7 @@ class EasyDiscordBot {
                 {
                     name: 'version',
                     description: "This command displays your bot's version.",
-                    admin: false,
+                    permissions: 0,
                     exec: async m => {
                         await m.reply(`${this.name} version ${this.version}`);
                     }
@@ -87,15 +87,7 @@ class EasyDiscordBot {
                     this.onCommand(message);
                     const command = this.getCommand(message.command.name);
                     if(command) {
-                        if(command.admin) {
-                            if(message.member.hasPermission("ADMINISTRATOR")) {
-                                command.exec(message);
-                            }
-                            else {
-                                message.reply(this.responseTable.insufficientPermissions);
-                            }
-                        }
-                        else {
+                        if(this.permissionsProxy(message, command)) {
                             command.exec(message);
                         }
                     }
@@ -114,11 +106,11 @@ class EasyDiscordBot {
             process.abort();
         }
     }
-    addCommand(name, description, requiresAdmin, callFunction) {
+    addCommand(name, description, permissions, callFunction) {
         const commandObject = {
             name: name.toString(),
             description: description.toString(),
-            admin: requiresAdmin instanceof Boolean ? requiresAdmin : false,
+            permissions: permissions && permissions instanceof Object ? permissions : 0,
             exec: callFunction && callFunction instanceof Function ? callFunction : m => {
                 return false;
             }
@@ -156,6 +148,30 @@ class EasyDiscordBot {
         catch (e) {
             return false;
         }
+    }
+    permissionsProxy(message, command) {
+        if(command.permissions === 0) {
+            return true;
+        }
+        if(command.permissions.users && command.permissions.users instanceof Array) {
+            if(command.permissions.users.findIndex(u => u == message.author.id) !== -1) {
+                return true;
+            }
+        }
+        if(command.permissions.roles && command.permissions.roles instanceof Array) {
+            const userRoles = message.member.roles.cache.array();
+            for(let i = 0; i < userRoles.length; i++) {
+                if(command.permissions.roles.findIndex(r => r == userRoles[i]) !== -1) {
+                    return true;
+                }
+            }
+        }
+        if(command.permissions.admin) {
+            if(message.member.hasPermission("ADMINISTRATOR")) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
