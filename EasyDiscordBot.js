@@ -5,15 +5,31 @@ class EasyDiscordBot {
     constructor(params) {
         try {
             this.client = new Client();
+            this.commandsList = [
+                {
+                    name: 'version',
+                    description: "This command displays your bot's version.",
+                    admin: false,
+                    exec: async m => {
+                        await m.reply(`${this.name} version ${this.version}`);
+                    }
+                }
+            ];
+            this.responseTable = {
+                commandNotFound: 'The command [command] does not exist.',
+                insufficientPermissions: "You don't have the required permissions to use this command.",
+                userNotConnected: "In order to use this command you have to be connected to a voice channel."
+            }
             this.name = params.name;
             this.version = params.version ? params.version : "1.0.0";
             this.discordToken = params.discordToken;
             this.isPreRelease = params.isPreRelease ? params.isPreRelease : false;
-            if(params.prefix && params.prefix instanceof String) {
-                this.prefix = params.prefix;
+            if(params.prefix) {
+                this.prefix = params.prefix.toString();
             }
             else {
-                throw new Error('Please specify a prefix.');
+                console.warn('Prefix has not been specified. Using default prefix (!)');
+                this.prefix = '!';
             }
 
             this.onReady = () => {
@@ -32,13 +48,13 @@ class EasyDiscordBot {
         catch (e) {
             console.error(e);
             console.warn('NOTICE! This module is based of off discord.js library. To use it please install Discord.js in your project (npm i discord.js)');
-            this = undefined;
             return undefined;
         }
     }
     async start(port) {
         console.log(`Bot name: ${this.name}`);
         console.log(`Bot version: ${this.version}`);
+        console.log(`Bot prefix: ${this.prefix}`);
         console.log('Based on discord.js library & EasyDiscordBot wrapper created by GRZANA (https://github.com/GRZ4NA)');
         if(this.isPreRelease) { console.warn('This version is marked as a pre-release version. You may encouter some bug and stability problems.'); }
         console.log(' ');
@@ -69,6 +85,12 @@ class EasyDiscordBot {
                 }
                 if(message.command.isCommand) {
                     this.onCommand(message);
+                    if(this.getCommand(message.command.name)) {
+                        this.getCommand(message.command.name).exec(message);
+                    }
+                    else {
+                        message.reply(this.responseTable.commandNotFound.replace('[command]', message.command.name));
+                    }
                 }
                 else {
                     this.onMessage(message);
@@ -78,6 +100,50 @@ class EasyDiscordBot {
         catch(e) {
             console.error('An error occured during login procedure. If this problem persists please check your app token.');
             process.abort();
+        }
+    }
+    addCommand(name, description, requiresAdmin, callFunction) {
+        const commandObject = {
+            name: name.toString(),
+            description: description.toString(),
+            admin: requiresAdmin instanceof Boolean ? requiresAdmin : false,
+            exec: callFunction && callFunction instanceof Function ? callFunction : m => {
+                return false;
+            }
+        }
+        if(this.getCommand(name)) {
+            console.error(`The command ${name} already exists in this instance.`)
+            return;
+        }
+        this.commandsList.push(commandObject);
+        return this.commandsList.findIndex(c => c.name == commandObject.name);
+    }
+    getCommand(name) {
+        try {
+            if(name instanceof String) {
+                if(this.commandsList.findIndex(c => c.name == name) !== -1) {
+                    return this.commandsList.find(c => c.name == name);
+                }
+                else {
+                    throw new ReferenceError(`Command ${name} does not exist in this instance.`);
+                }
+            }
+            else if(name instanceof Number) {
+                const index = this.commandsList.findIndex(c => c.name == name);
+                if(index !== -1) {
+                    return this.commandsList[index];
+                }
+                else {
+                    throw new ReferenceError(`Command ${name} does not exist in this instance.`);
+                }
+            }
+            else {
+                return 0;
+            }
+        }
+        catch (e) {
+            console.error(e);
+            return false;
         }
     }
 }
