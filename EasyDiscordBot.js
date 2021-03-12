@@ -67,7 +67,6 @@ class EasyDiscordBot {
                 console.log(`Listening on port ${port}`);
             }
             console.log('Connecting to Discord...');
-            await this.client.login(this.discordToken);
             this.client.on('ready', () =>{
                 this.onReady();
                 return true;
@@ -96,6 +95,7 @@ class EasyDiscordBot {
                     this.onMessage(message);
                 }
             });
+            await this.client.login(this.discordToken);
         }
         catch(e) {
             console.error('An error occured during login procedure. If this problem persists please check your app token.');
