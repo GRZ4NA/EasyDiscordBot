@@ -33,6 +33,8 @@ class EasyDiscordBot {
             }
 
             this.onReady = () => {
+                console.log('Connected!');
+                console.log(' ');
                 return;
             }
             this.onMessage = message => {
@@ -67,8 +69,6 @@ class EasyDiscordBot {
             console.log('Connecting to Discord...');
             await this.client.login(this.discordToken);
             this.client.on('ready', () =>{
-                console.log('Connected!');
-                console.log(' ');
                 this.onReady();
                 return true;
             });
