@@ -120,25 +120,26 @@ class EasyDiscordBot {
     }
     getCommand(name) {
         try {
-            if(name instanceof String) {
-                if(this.commandsList.findIndex(c => c.name == name) !== -1) {
-                    return this.commandsList.find(c => c.name == name);
-                }
-                else {
-                    throw new ReferenceError(`Command ${name} does not exist in this instance.`);
-                }
-            }
-            else if(name instanceof Number) {
-                const index = this.commandsList.findIndex(c => c.name == name);
-                if(index !== -1) {
-                    return this.commandsList[index];
-                }
-                else {
-                    throw new ReferenceError(`Command ${name} does not exist in this instance.`);
-                }
+            const command = this.commandsList.find(c => c.name == name);
+            if(command) {
+                return command;
             }
             else {
-                return 0;
+                throw new ReferenceError(`Command ${name} does not exist in this instance.`);
+            }
+        }
+        catch (e) {
+            console.error(e);
+            return false;
+        }
+    }
+    getCommandById(id) {
+        try {
+            if(this.commandsList[id]) {
+                return this.commandsList[id];
+            }
+            else {
+                throw new ReferenceError(`Command with id ${id} does not exist in this instance.`);
             }
         }
         catch (e) {
