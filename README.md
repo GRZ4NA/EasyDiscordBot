@@ -1,0 +1,2 @@
+# EasyDiscordBot
+## Documentation coming soon!
