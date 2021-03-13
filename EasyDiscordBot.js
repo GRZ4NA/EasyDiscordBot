@@ -45,7 +45,7 @@ class EasyDiscordBot {
                         const message = EasyDiscordBot.createEmbed({
                             title: `Help for ${this.bot.name}`,
                             color: this.config.accentColor,
-                            description: 'List of available commands',
+                            description: `List of available commands (Prefix: ${this.config.prefix})`,
                             footer: `${this.bot.name} ${this.bot.version}`,
                             fields: commands
                         });
