@@ -102,6 +102,7 @@ class EasyDiscordBot {
                     message.command.isCommand = true;
                     message.command.name = message.content.replace(this.config.prefix, '').split(' ')[0];
                     message.command.arguments = message.content.replace(this.config.prefix, '').replace(message.command.name, '').split(', ');
+                    message.command.arguments[0] = message.command.arguments[0].replace(' ', '');
                 }
                 else {
                     message.command.isCommand = false;
