@@ -1,33 +1,34 @@
-import "discord.js";
 import { Client, MessageEmbed } from "discord.js";
 import http from 'http';
 
 class EasyDiscordBot {
     constructor(params) {
         try {
-            this.bot = {
-                client: new Client(),
-                name: params.name.toString(),
-                version: params.version ? params.version.toString() : "1.0.0"
-            };
+            this.client = new Client();
+            this.name = params.name.toString();
+            this.version = params.version ? params.version.toString() : null;
             this.config = {
                 discordToken: params.discordToken.toString(),
                 prefix: params.prefix ? params.prefix.toString() : "!",
                 botMessageDeleteTimeout: 5000,
                 accentColor: "#000",
-                responseTable: {
-                    commandNotFound: 'The command [command] does not exist.',
+                responses: {
+                    commandNotFound: 'The command "[command]" does not exist.',
                     insufficientPermissions: "You don't have the required permissions to use this command.",
                     userNotConnected: "In order to use this command you have to be connected to a voice channel."
+                },
+                helpMessage: {
+                    header: `Help for ${this.name}`,
+                    description: `List of available commands`
                 }
             };
             this.commandsList = [
                 {
                     name: 'version',
-                    description: "This command displays your bot's version.",
+                    description: "Displays your bot's version.",
                     permissions: 0,
                     exec: async m => {
-                        await m.reply(`${this.bot.name} version ${this.bot.version}`);
+                        await m.reply(`${this.name} version ${this.version}`);
                     }
                 },
                 {
@@ -38,15 +39,15 @@ class EasyDiscordBot {
                         const commands = [];
                         for(let i = 0; i < this.commandsList.length; i++) {
                             const commandObj = { inline: false };
-                            commandObj.title = this.commandsList[i].name;
+                            commandObj.title = this.config.prefix + this.commandsList[i].name;
                             commandObj.value = this.commandsList[i].description;
                             commands.push(commandObj);
                         }
                         const message = EasyDiscordBot.createEmbed({
-                            title: `Help for ${this.bot.name}`,
+                            title: this.config.helpMessage.header,
                             color: this.config.accentColor,
-                            description: `List of available commands (Prefix: ${this.config.prefix})`,
-                            footer: `${this.bot.name} ${this.bot.version}`,
+                            description: this.config.helpMessage.description,
+                            footer: `${this.name} ${this.version}`,
                             fields: commands
                         });
                         await m.channel.send(message);
@@ -73,30 +74,29 @@ class EasyDiscordBot {
         }
         catch (e) {
             console.error(e);
-            console.warn('NOTICE! This module is based of off discord.js library. To use it please install Discord.js in your project (npm i discord.js)');
             return undefined;
         }
     }
     async start(port) {
-        console.log(`Bot name: ${this.bot.name}`);
-        console.log(`Bot version: ${this.bot.version}`);
+        console.log(`Bot name: ${this.name}`);
+        if(this.version) { console.log(`Bot version: ${this.version}`); }
         console.log(`Bot prefix: ${this.config.prefix}`);
-        console.log('Based on discord.js library & EasyDiscordBot wrapper created by GRZANA (https://github.com/GRZ4NA)');
         console.log(' ');
         try {
             if(port) {
-                console.log('A port has been specified. Creating http server...');
+                console.log('Creating http server...');
                 this.config.port = port;
                 http.createServer().listen(this.config.port);
                 console.log(`Listening on port ${this.config.port}`);
             }
+            if(!this.version) { this.commandsList.shift(); }
             console.log('Connecting to Discord...');
-            this.bot.client.on('ready', () =>{
+            this.client.on('ready', () =>{
                 this.events.onReady();
                 return true;
             });
-            this.bot.client.on('error', e => this.events.onError(e));
-            this.bot.client.on('message', message => {
+            this.client.on('error', e => this.events.onError(e));
+            this.client.on('message', message => {
                 message.command = {};
                 if(message.content.startsWith(this.config.prefix) && !message.content.replace(this.config.prefix, '').startsWith(this.config.prefix)) {
                     message.command.isCommand = true;
@@ -114,21 +114,21 @@ class EasyDiscordBot {
                             command.exec instanceof Function ? command.exec(message) : m => { console.error(`The exec property on ${command.name} is not a function`); return; };
                         }
                         else {
-                            message.reply(this.config.responseTable.insufficientPermissions).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
+                            message.reply(this.config.responses.insufficientPermissions).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
                         }
                     }
                     else {
-                        message.reply(this.config.responseTable.commandNotFound.replace('[command]', message.command.name)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
+                        message.reply(this.config.responses.commandNotFound.replace('[command]', message.command.name)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
                     }
                 }
                 else {
                     this.events.onMessage(message);
                 }
             });
-            await this.bot.client.login(this.config.discordToken);
+            await this.client.login(this.config.discordToken);
         }
         catch(e) {
-            console.error('An error occured during login procedure. If this problem persists please check your app token.');
+            console.error('An error occured during login procedure. If this problem continues please check your Discord token or report this problem as a bug on GitHub.');
             process.abort();
         }
     }
