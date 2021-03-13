@@ -12,7 +12,7 @@ class EasyDiscordBot {
             };
             this.config = {
                 discordToken: params.discordToken.toString(),
-                prefix: params.prefix ? params.prefix.toString() : () => { console.warn('Prefix has not been specified. Using default prefix (!)'); return "!"; },
+                prefix: params.prefix ? params.prefix.toString() : "!",
                 botMessageDeleteTimeout: 5000,
                 accentColor: "#000",
                 responseTable: {
