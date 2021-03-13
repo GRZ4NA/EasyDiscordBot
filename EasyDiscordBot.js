@@ -35,21 +35,19 @@ class EasyDiscordBot {
                     description: "Displays list of available commands",
                     permissions: 0,
                     exec: async m => {
+                        const commands = [];
+                        for(let i = 0; i < this.commandsList.length; i++) {
+                            const commandObj = { inline: false };
+                            commandObj.title = this.commandsList[i].name;
+                            commandObj.value = this.commandsList[i].description;
+                            commands.push(commandObj);
+                        }
                         const message = EasyDiscordBot.createEmbed({
                             title: `Help for ${this.bot.name}`,
                             color: this.config.accentColor,
                             description: 'List of available commands',
                             footer: `${this.bot.name} ${this.bot.version}`,
-                            fields: () => {
-                                const commands = [];
-                                for(let i = 0; i < this.commandsList.length; i++) {
-                                    const commandObj = { inline: false };
-                                    commandObj.title = this.commandsList[i].name;
-                                    commandObj.value = this.commandsList[i].description;
-                                    commands.push(commandObj);
-                                }
-                                return commands;
-                            }
+                            fields: commands
                         });
                         await m.channel.send(message);
                     }
