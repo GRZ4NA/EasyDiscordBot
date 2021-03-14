@@ -201,7 +201,7 @@ class EasyDiscordBot {
             if(params.footer) { message.setFooter(params.footer.toString()); }
             if(params.fields && params.fields instanceof Array) {
                 for(let i = 0; i < params.fields.length; i++) {
-                    message.addField(params.fields[i].title, params.fields[i].value, params.fields[i].inline && params.fields[i].inline instanceof Boolean ? params.fields[i].inline : false);
+                    message.addField(params.fields[i].title, params.fields[i].value, params.fields[i].inline === true);
                 }
             }
             return message;
