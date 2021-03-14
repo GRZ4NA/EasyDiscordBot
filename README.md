@@ -24,7 +24,7 @@ Start your bot using:
 
 `bot.login(port);`
 
-port - string (optional) - (if specified) the app will create an http server that will be using the specified port
+- port - string (optional) - (if specified) the app will create an http server that will be using the specified port
 
 ## Commands
 There are 2 predefined commands:
