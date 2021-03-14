@@ -1,4 +1,5 @@
 # EasyDiscordBot
+**Please excuse my English skills. I know I make a lot of mistakes but I hope that you can understand.**
 
 ## Installation
 You can install this module using npm:
