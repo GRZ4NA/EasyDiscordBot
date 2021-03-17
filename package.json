@@ -1,7 +1,7 @@
 {
   "name": "ezdiscordbot",
-  "version": "1.0.4",
-  "description": "An easy and free way to build an advanced Discord bot.",
+  "version": "1.0.5",
+  "description": "Create your own Discord bot in minutes.",
   "main": "EasyDiscordBot.js",
   "type": "module",
   "scripts": {

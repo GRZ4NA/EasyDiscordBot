@@ -6,31 +6,21 @@ class EasyDiscordBot {
         try {
             this.client = new Client();
             this.name = params.name.toString();
-            this.version = params.version ? params.version.toString() : null;
             this.config = {
-                discordToken: params.discordToken.toString(),
+                discordToken: params.discordToken ? params.discordToken.toString() : undefined,
                 prefix: params.prefix ? params.prefix.toString() : "!",
                 botMessageDeleteTimeout: 5000,
                 accentColor: "#000",
                 responses: {
                     commandNotFound: 'The command "[command]" does not exist.',
-                    insufficientPermissions: "You don't have the required permissions to use this command.",
-                    userNotConnected: "In order to use this command you have to be connected to a voice channel."
+                    insufficientPermissions: `You don't have the required permissions to use the "[command]" command.`
                 },
                 helpMessage: {
-                    header: `Help for ${this.name}`,
+                    header: `Help for [name]`,
                     description: `List of available commands`
                 }
             };
             this.commandsList = [
-                {
-                    name: 'version',
-                    description: "Displays your bot's version.",
-                    permissions: 0,
-                    exec: async m => {
-                        await m.reply(`${this.name} version ${this.version}`);
-                    }
-                },
                 {
                     name: 'help',
                     description: "Displays list of available commands",
@@ -44,10 +34,10 @@ class EasyDiscordBot {
                             commands.push(commandObj);
                         }
                         const message = EasyDiscordBot.createEmbed({
-                            title: this.config.helpMessage.header,
+                            title: this.config.helpMessage.header.split('[name]').join(this.name),
                             color: this.config.accentColor,
-                            description: this.config.helpMessage.description,
-                            footer: `${this.name} ${this.version}`,
+                            description: this.config.helpMessage.description.split('[name]').join(this.name),
+                            footer: this.name,
                             fields: commands
                         });
                         await m.channel.send(message);
@@ -56,19 +46,18 @@ class EasyDiscordBot {
             ];
             this.events = {
                 onReady: () => {
-                    console.log('Connected!');
-                    console.log(' ');
+                    console.log('Bot is ready!');
                     return;
                 },
                 onMessage: message => {
-                    console.log(`${message.author.username} (${message.channel.name}): ${message.content}`);
+                    return;
                 },
                 onCommand: command => {
-                    console.log(`${command.author.username} (${command.channel.name}): ${command.content}`);
-                    console.log(command.command);
+                    return;
                 },
                 onError: error => {
                     console.error(error);
+                    return;
                 }
             };
         }
@@ -79,17 +68,18 @@ class EasyDiscordBot {
     }
     async start(port) {
         console.log(`Bot name: ${this.name}`);
-        if(this.version) { console.log(`Bot version: ${this.version}`); }
         console.log(`Bot prefix: ${this.config.prefix}`);
         console.log(' ');
         try {
+            if(!this.config.discordToken) {
+                throw new Error('The Discord bot token is not specified. Please include your token in the constructor or add it by using the discordToken config property.');
+            }
             if(port) {
                 console.log('Creating http server...');
                 this.config.port = port;
                 http.createServer().listen(this.config.port);
                 console.log(`Listening on port ${this.config.port}`);
             }
-            if(!this.version) { this.commandsList.shift(); }
             console.log('Connecting to Discord...');
             this.client.on('ready', () =>{
                 this.events.onReady();
@@ -115,11 +105,11 @@ class EasyDiscordBot {
                             command.exec instanceof Function ? command.exec(message) : m => { console.error(`The exec property on ${command.name} is not a function`); return; };
                         }
                         else {
-                            message.reply(this.config.responses.insufficientPermissions).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
+                            message.reply(this.config.responses.insufficientPermissions.split('[command]').join(message.command.name)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
                         }
                     }
                     else {
-                        message.reply(this.config.responses.commandNotFound.replace('[command]', message.command.name)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
+                        message.reply(this.config.responses.commandNotFound.split('[command]').join(message.command.name)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
                     }
                 }
                 else {
@@ -129,8 +119,8 @@ class EasyDiscordBot {
             await this.client.login(this.config.discordToken);
         }
         catch(e) {
-            console.error('An error occured during login procedure. If this problem continues please check your Discord token or report this problem as a bug on GitHub.');
-            process.abort();
+            console.error(e);
+            return;
         }
     }
     addCommand(name, description, permissions, callFunction) {
@@ -139,7 +129,8 @@ class EasyDiscordBot {
             description: description.toString(),
             permissions: permissions && permissions instanceof Object ? permissions : 0,
             exec: callFunction && callFunction instanceof Function ? callFunction : m => {
-                return false;
+                console.warn(`The command ${name} has no execute function specified.`)
+                return;
             }
         }
         if(this.getCommand(name)) {
@@ -160,7 +151,7 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            return false;
+            return undefined;
         }
     }
     permissionsProxy(message, command) {
