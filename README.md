@@ -9,6 +9,7 @@
 - [Events](#events)
 - [Advanced configuration](#advanced-configuration)
 - [Embed messages](#embed-messages)
+- [Fetching objects](#fetching-objects)
 
 ## Installation
 Install this package using:
