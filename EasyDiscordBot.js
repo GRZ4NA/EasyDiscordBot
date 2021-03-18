@@ -62,7 +62,7 @@ class EasyDiscordBot {
                                 const fields = [];
                                 if(permissions instanceof Object) {
                                     if(permissions.admin === true) {
-                                        fields.push({ title: "Permissions:", value: "administrator", inline: false });
+                                        fields.push({ title: "Permissions:", value: "Administrator", inline: false });
                                     }
                                     if(permissions.roles instanceof Array && permissions.roles.length > 0) {
                                         const roleArray = [];
