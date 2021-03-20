@@ -1,4 +1,6 @@
 import { Client, Guild, MessageEmbed } from "discord.js";
+import { DiscordBotCommand } from './src/DiscordBotCommand.js';
+import { createCommandHelp, createHelpCommandsList } from './src/generators/helpMessage.js';
 import http from 'http';
 
 class EasyDiscordBot {
@@ -11,100 +13,65 @@ class EasyDiscordBot {
                 prefix: params.prefix ? params.prefix.toString() : "!",
                 botMessageDeleteTimeout: 5000,
                 accentColor: "#000",
+                botActivity: {
+                    title: `[prefix]help`,
+                    type: 'WATCHING',
+                    url: ''
+                },
                 responses: {
                     commandNotFound: 'The command "[command]" does not exist.',
                     insufficientPermissions: `You don't have the required permissions to use the "[command]" command.`,
-                    botError: `An error occurred when executing command "[name]".`
+                    botError: `An error occurred when executing command "[command]".`
                 },
                 helpMessage: {
-                    header: `Help for [name]`,
+                    header: `Help for [botName]`,
                     description: `List of available commands`
                 }
             };
             this.commandsList = [
-                {
+                new DiscordBotCommand({
                     name: 'help',
-                    description: "Displays list of available commands",
+                    description: "Displays list of available commands or detailed informations about specified command",
                     permissions: 0,
-                    exec: async m => {
+                    usage: '[command name (optional)]',
+                    execute: async m => {
                         try {
-                            const commands = [];
-                            for(let i = 0; i < this.commandsList.length; i++) {
-                                const commandObj = { inline: false };
-                                commandObj.title = this.config.prefix + this.commandsList[i].name;
-                                commandObj.value = this.commandsList[i].description != "" ? this.commandsList[i].description.split('[prefix]').join(this.config.prefix) : "No description";
-                                commands.push(commandObj);
-                            }
-                            const message = EasyDiscordBot.createEmbed({
-                                title: this.config.helpMessage.header.split('[name]').join(this.name),
-                                color: this.config.accentColor,
-                                description: this.config.helpMessage.description.split('[name]').join(this.name),
-                                footer: this.name,
-                                fields: commands
-                            });
-                            await m.channel.send(message);
-                        }
-                        catch (e) {
-                            this.events.onError(e, m);
-                            return;
-                        }
-                    }
-                },
-                {
-                    name: 'command',
-                    description: `Displays detailed informations about the specified command (usage: [prefix]command [command-name])`,
-                    permissions: 0,
-                    exec: async m => {
-                        try {
-                            const command = this.getCommand(m.command.arguments[0] ? m.command.arguments[0] : "command");
-                            if(command) {
-                                const permissions = command.permissions;
-                                const fields = [];
-                                if(permissions instanceof Object) {
-                                    if(permissions.admin === true) {
-                                        fields.push({ title: "Permissions:", value: "Administrator", inline: false });
-                                    }
-                                    if(permissions.roles instanceof Array && permissions.roles.length > 0) {
-                                        const roleArray = [];
-                                        permissions.roles.map(roleID => {
-                                            const role = this.getRole(m.guild, roleID);
-                                            if(role) {
-                                                roleArray.push(role.name);
-                                            }
-                                        });
-                                        if(roleArray.length > 0) { fields.push({ title: "Roles:", value: roleArray.join(', '), inline: false }); }
-                                    }
-                                    if(permissions.users instanceof Array && permissions.users.length > 0) {
-                                        const userArray = [];
-                                        permissions.users.map(userID => {
-                                            const user = this.getUser(m.guild, userID);
-                                            if(user) {
-                                                userArray.push(user.user.username + "#" + user.user.discriminator);
-                                            }
-                                        });
-                                        if(userArray.length > 0) { fields.push({ title: "Users:", value: userArray.join(', '), inline: false }); }
-                                    }
+                            if(m.command.arguments[0]) {
+                                const command = this.getCommand(m.command.arguments[0]);
+                                if(command) {
+                                    const fields = await createCommandHelp(this, command, m);
+                                    const message = EasyDiscordBot.createEmbed({
+                                        title: command.name,
+                                        description: this.stringProcessor(command.description),
+                                        color: this.config.accentColor,
+                                        footer: this.name,
+                                        showTimestamp: true,
+                                        fields: fields
+                                    });
+                                    await m.channel.send(message);
                                 }
+                                else {
+                                    m.reply(this.stringProcessor(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}})).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout ? this.config.botMessageDeleteTimeout : 5000}));
+                                }
+                            }
+                            else {
+                                const commands = createHelpCommandsList(this);
                                 const message = EasyDiscordBot.createEmbed({
-                                    title: command.name,
-                                    description: command.description != "" ? command.description.split('[prefix]').join(this.config.prefix) : "No description",
+                                    title: this.stringProcessor(this.config.helpMessage.header),
                                     color: this.config.accentColor,
+                                    description: this.stringProcessor(this.config.helpMessage.description),
                                     footer: this.name,
-                                    showTimestamp: true,
-                                    fields: fields
+                                    fields: commands
                                 });
                                 await m.channel.send(message);
                             }
-                            else {
-                                m.reply(`The command "${m.command.arguments[0]}" does not exist.`).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout ? this.config.botMessageDeleteTimeout : 5000}));
-                            }
                         }
                         catch (e) {
                             this.events.onError(e, m);
                             return;
                         }
                     }
-                }
+                })
             ];
             this.events = {
                 onReady: () => {
@@ -119,7 +86,7 @@ class EasyDiscordBot {
                 },
                 onError: (error, message) => {
                     if(message) {
-                        message.reply(this.config.responses.botError.split('[name]').join(message.command.name) + ' ' + error.toString()).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout}));
+                        message.reply(this.stringProcessor(this.config.responses.botError, message) + ' ' + error.toString()).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout}));
                     }
                     console.error(error);
                     return;
@@ -132,8 +99,8 @@ class EasyDiscordBot {
         }
     }
     async start(port) {
-        console.log(`Bot name: ${this.name}`);
-        console.log(`Bot prefix: ${this.config.prefix}`);
+        console.log(this.stringProcessor(`Bot name: [botName]`));
+        console.log(this.stringProcessor(`Bot prefix: [prefix]`));
         console.log(' ');
         try {
             if(!this.config.discordToken) {
@@ -151,7 +118,7 @@ class EasyDiscordBot {
                 return true;
             });
             this.client.on('error', e => this.events.onError(e));
-            this.client.on('message', message => {
+            this.client.on('message', async message => {
                 message.command = {};
                 if(message.content.startsWith(this.config.prefix) && !message.content.replace(this.config.prefix, '').startsWith(this.config.prefix)) {
                     message.command.isCommand = true;
@@ -162,21 +129,34 @@ class EasyDiscordBot {
                     }
                 }
                 else {
-                    message.command.isCommand = false;
+                    for(let i = 0; i < this.commandsList.length; i++) {
+                        if(this.commandsList[i].keywords) {
+                            const commandIndex = this.commandsList[i].keywords.findIndex(kw => kw == message.content.split(' ')[0]);
+                            if(commandIndex !== -1) {
+                                message.command.isCommand = true;
+                                message.command.name = this.commandsList[i].name;
+                                message.command.arguments = message.content.replace(message.content.split(' ')[0], '').split(',');
+                                for(let j = 0; j < message.command.arguments.length; j++) {
+                                    message.command.arguments[j] = message.command.arguments[j].replace(' ', '');
+                                }
+                            }
+                        }
+                    }
+                    if(!message.command.isCommand) { message.command.isCommand = false; }
                 }
                 if(message.command.isCommand && !message.author.bot) {
                     this.events.onCommand(message);
                     const command = this.getCommand(message.command.name);
                     if(command) {
-                        if(this.permissionsProxy(message, command)) {
-                            command.exec instanceof Function ? command.exec(message) : m => { console.error(`The exec property on ${command.name} is not a function`); return; };
+                        if(await this.permissionsProxy(message, command)) {
+                            command.execute(message);
                         }
                         else {
-                            message.reply(this.config.responses.insufficientPermissions.split('[command]').join(message.command.name)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
+                            message.reply(this.stringProcessor(this.config.responses.insufficientPermissions, message)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
                         }
                     }
                     else {
-                        message.reply(this.config.responses.commandNotFound.split('[command]').join(message.command.name)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
+                        message.reply(this.stringProcessor(this.config.responses.commandNotFound, message)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
                     }
                 }
                 else {
@@ -184,34 +164,33 @@ class EasyDiscordBot {
                 }
             });
             await this.client.login(this.config.discordToken);
+            if(this.config.botActivity && typeof this.config.botActivity == 'object') {
+                await this.client.user.setActivity(this.stringProcessor(this.config.botActivity.title.toString()), { type: this.config.botActivity.type ? this.config.botActivity.type.toString().toUpperCase() : 'PLAYING', url: this.config.botActivity.url ? this.config.botActivity.url.toString() : undefined });
+            }
         }
         catch(e) {
-            console.error(e);
+            this.events.onError(e);
             return;
         }
     }
-    addCommand(name, description, permissions, callFunction) {
+    addCommand(name, description, permissions, callFunction, keywords, usage) {
         try {
-            const commandObject = {
-                name: name.toString(),
-                description: description.toString(),
-                permissions: permissions && permissions instanceof Object ? permissions : 0,
-                exec: callFunction && callFunction instanceof Function ? callFunction : m => {
-                    console.warn(`The command ${name} has no execute function specified.`)
-                    return;
-                }
-            }
-            if(name == "" || name == " " || name == this.config.prefix || name.split(' ').length == 0) {
-                throw new Error('Incorrect command name');
-            }
+            const commandObject = new DiscordBotCommand({
+                name: name,
+                description: description,
+                permissions: permissions,
+                keywords: keywords,
+                usage: usage,
+                execute: callFunction
+            });
             if(this.getCommand(name)) {
                 throw new ReferenceError(`The command ${name} already exists in this instance.`);
             }
             this.commandsList.push(commandObject);
-            return this.commandsList.find(c => c.name == commandObject.name);   
+            return commandObject;   
         }
         catch (e) {
-            console.error(e);
+            this.events.onError(e);
             return undefined;
         }
     }
@@ -229,9 +208,9 @@ class EasyDiscordBot {
             return undefined;
         }
     }
-    getGuild(id) {
+    async getGuild(id) {
         try {
-            const guild = this.client.guilds.cache.get(id);
+            const guild = await this.client.guilds.fetch(id);
             if(guild) {
                 return guild;
             }
@@ -240,14 +219,13 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            this.events.onError(e);
             return undefined;
         }
     }
-    getRole(guild, id) {
+    async getRole(guild, id) {
         try {
             if(guild instanceof Guild) {
-                const role = guild.roles.cache.get(id);
+                const role = await guild.roles.fetch(id);
                 if(role) {
                     return role;
                 }
@@ -260,7 +238,6 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            this.events.onError(e);
             return undefined;
         }
     }
@@ -280,14 +257,13 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            this.events.onError(e);
             return undefined;
         }
     }
-    getUser(guild, id) {
+    async getUser(guild, id) {
         try {
             if(guild instanceof Guild) {
-                const user = guild.members.cache.get(id);
+                const user = await guild.members.fetch(id);
                 if(user) {
                     return user;
                 }
@@ -300,37 +276,55 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            this.events.onError(e);
             return undefined;
         }
     }
-    permissionsProxy(message, command) {
-        if(command.permissions === 0) {
-            return true;
-        }
-        if(command.permissions.users && command.permissions.users instanceof Array) {
-            if(command.permissions.users.findIndex(u => u == message.author.id) !== -1) {
-                return true;
-            }
-        }
-        if(command.permissions.roles && command.permissions.roles instanceof Array) {
-            const userRoles = message.member.roles.cache.array();
-            for(let i = 0; i < userRoles.length; i++) {
-                if(command.permissions.roles.findIndex(r => r == userRoles[i]) !== -1) {
-                    return true;
+    async permissionsProxy(message, command) {
+        try {
+            if(command.permissions) {
+                if(command.permissions.users && command.permissions.users instanceof Array) {
+                    if(command.permissions.users.findIndex(u => u == message.author.id) !== -1) {
+                        return true;
+                    }
                 }
+                if(command.permissions.roles && command.permissions.roles instanceof Array) {
+                    let userRoles = message.member.roles.cache;
+                    userRoles = userRoles.array();
+                    for(let i = 0; i < userRoles.length; i++) {
+                        if(command.permissions.roles.findIndex(r => r == userRoles[i]) !== -1) {
+                            return true;
+                        }
+                    }
+                }
+                if(command.permissions.permissions && command.permissions.permissions instanceof Array) {
+                    const permissionList = command.permissions.permissions;
+                    const userPermissions = message.member.permissions.toArray();
+                    for(let i = 0; i < userPermissions.length; i++) {
+                        if(permissionList.findIndex(p => p.toUpperCase() == userPermissions[i]) !== -1) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
-        }
-        if(command.permissions.admin) {
-            if(message.member.hasPermission("ADMINISTRATOR")) {
+            else {
                 return true;
             }
         }
-        return false;
+        catch (e) {
+            console.error(e);
+            return false;
+        }
+    }
+    stringProcessor(string, message) {
+        string = string.split('[botName]').join(this.name);
+        string = string.split('[prefix]').join(this.config.prefix);
+        string = string.split('[command]').join(message && message.command && message.command.isCommand ? message.command.name : "");
+        return string;
     }
     static createEmbed(params) {
         try {
-            const message = new MessageEmbed()
+            const message = new MessageEmbed();
             message.setColor(params.color ? params.color.toString() : "#000");
             if(params.title) { message.setTitle(params.title.toString()); }
             if(params.url) { message.setURL(params.url.toString()); }
@@ -355,3 +349,4 @@ class EasyDiscordBot {
 }
 
 export default EasyDiscordBot;
+export { EasyDiscordBot };

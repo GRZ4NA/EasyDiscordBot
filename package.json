@@ -1,7 +1,7 @@
 {
   "name": "ezdiscordbot",
   "description": "Create your own Discord bot in minutes.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "main": "EasyDiscordBot.js",
   "type": "module",
   "scripts": {
@@ -12,7 +12,11 @@
     "url": "git+https://github.com/GRZ4NA/EasyDiscordBot.git"
   },
   "keywords": [
-    "discord"
+    "discord",
+    "bot",
+    "easy",
+    "fast",
+    "discord.js"
   ],
   "author": "GRZANA",
   "license": "MIT",

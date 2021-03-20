@@ -1,4 +1,5 @@
 # EasyDiscordBot
+## Version 1.2.0
 
 **NOTE! Since I'm the only person that created this package I can't take care of everything so in some cases my code may behave not as expected. Feel free to contribute to this project by submitting a change or a bug.**
 
@@ -6,6 +7,9 @@
 - [Installation](#installation)
 - [Getting started](#getting-started)
 - [Commands](#commands)
++ [Command arguments](#command-arguments)
++ [Permissions](#permissions)
++ [Text processing](#text-processing)
 - [Events](#events)
 - [Advanced configuration](#advanced-configuration)
 - [Embed messages](#embed-messages)
@@ -18,7 +22,7 @@ Install this package using:
 
 Then import it to your project:
 
-`import EasyDiscordBot from 'ezdiscordbot';`
+`import { EasyDiscordBot } from 'ezdiscordbot';`
 
 ## Getting started
 Create your bot's instance:
@@ -28,7 +32,7 @@ Create your bot's instance:
 params - an object that contains bot's basic configuration
 - name - string - your bot's name (will appear in help message)
 - prefix - string - your bot's prefix ("!" if not specified)
-- discordToken - string - discord bot token
+- discordToken - string - Discord bot token
 
 Connect your app to Discord using:
 
@@ -37,30 +41,45 @@ Connect your app to Discord using:
 - port - string (optional) - if specified, the app will create an http server and start listening on specified port
 
 ## Commands
-The package contains 2 built-in commands:
-- `help` - shows commands list
-- `command [command name]` - displays detailed informations about a command with name `[command name]`
+The package contains 1 built-in command:
+- `help [command name (optional)]` - shows commands list or details about `[command name]`
 
 You can add your own commands by using:
 
-`bot.addCommand(name, description, permissions, callFunction);`
+`bot.addCommand(name, description, permissions, callFunction, keywords, usage);`
 
 - name - string - command name (It's being used to start the command)
 - description - string - command description that will appear in the help message
-- permissions - object - command usage permissions
+- permissions - object or null - command usage permissions
 - callFunction - function - being called when using a command (first argument is a message object)
+- keywords - array (string) - array of keywords that can trigger the commnand without prefix
+- usage - string - usage instructions that will be displayed in help message
 
 ### Command arguments
 Command arguments are located in the "command" property of every "message" object.
 - isCommand - boolean - is true when the message is an instance of a command
 - name - string - name of the command
-- arguments - array `[string]` - arguments list
+- arguments - array (string) - arguments list
 
 ### Permissions
-- admin - boolean - determines if the caller has to be a server administrator
+- permissions - array (string) - contains names of privileges that are permitted to use the command (list of permissions available [here](https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS))
 - roles - array (string) - contains IDs of roles that are permitted to use the command
 - users - array (string)  - contains IDs of users that are permitted to use the command
 **NOTE! The caller has to meet at least 1 requirement to start a command.**
+
+### Text processing
+This class has stringProcessor function built-in (**do not overwrite it**)
+It's being called every time your bot sends a message but you have to manually include it in your own commands.
+
+`bot.stringProcessor(string, message)`
+
+- string - string - a string that will be processed
+- message - object (Message) - a Message instance that will be used to replace `[command]`
+
+Variables (in square brackets) that can be replaced:
+- `[botName]` - replaced with your bot's name
+- `[prefix]` - replaced with bot's prefix
+- `[command]` - replaced with command's name (if message argument is present)
 
 ## Events
 There are 4 main events:
@@ -69,7 +88,7 @@ There are 4 main events:
     + message - object - a message object
 - onCommand - function - will be called when someone starts a bot command
     + message - object - a message object
-- onError - function - will be called when Discord API returns an error (By default this function will replace `[name]` with the command name)
+- onError - function - will be called when Discord API returns an error
     + error - object - an error object
     + message - object (optional) - a message object that will be used to reply to the caller with error message
 
@@ -85,14 +104,16 @@ Configuration parameters are stored in the "config" property.
 - botMessageDeleteTimeout - number - time (in ms) after which bot's error messages will be deleted
 - accentColor - string (HEX or RGB) - used to set color of embed messages
 - responses - object:
-    **`[command]` will be replaced with the command's name**
     + commandNotFound - string - is being sent when somebody tries to call the command that does not exist
     + insufficientPermissions - string - is being sent when the caller does not have required permissions
     + botError - string - is being sent when error occurs
 - helpMessage - object:
-    **`[name]` will be replaced with bot's name**
     + header - string - Help message header
     + description - string - Help message bottom text
+- botActivity - object - an object that can will be used to set your bot's activity on Discord:
+    + type - string - type of activity ([list](https://discord.js.org/#/docs/main/stable/typedef/ActivityType))
+    + url - string (optional)
+    + name - string - activity name
 
 ## Embed messages
 A static property is defined for creating embed content.
@@ -113,22 +134,21 @@ params - object:
     + link - string (url) - link to external resource that will be attached to the author
 - url - string (url) - URL that will be attached to the message
 - fields - array (object):
-    *object structure*
     + title - string - title of the field
     + value - string - bottom text of the field
     + inline - boolean - determines if the field is displayed in line
 
 ## Fetching objects
-- Get guild by ID - getGuild(id) - returns Guild instance or `undefined`
+- Get guild by ID - getGuild(id) - returns Promise(Guild or `undefined`)
     + id - string - id of a guild
-- Get role by ID - getRole(guild, id) - returns Role instance or `undefined`
-    + guild - object - a Guild instance
+- Get role by ID - getRole(guild, id) - returns Promise(Role or `undefined`)
+    + guild - object (Guild) - a Guild instance
     + id - string - role ID
 - Get channel by ID - getChannel(guild, id) - returns Channel, VoiceChannel, TextChannel, CategoryChannel or `undefined`
-    + guild - object - a Guild instance
+    + guild - object (Guild) - a Guild instance
     + id - string - channel ID
-- Get user by ID - getUser(guild, id) - return Member or `undefined`
-    + guild - object - a Guild instance
+- Get user by ID - getUser(guild, id) - return Promise(Member or `undefined`)
+    + guild - object (Guild) - a Guild instance
     + id - string - user ID
 - Get command by name - getCommand(name) - returns command object from commands list or `undefined`
     + name - string - command name
