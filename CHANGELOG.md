@@ -24,3 +24,8 @@
 + added "permissions" property which is an array of permissions that can activate the command ([list](https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS))
 - added string processor function that replaces names in square brackets (details in documentation) **DO NOT OVERWRITE THIS FUNCTION**
 - added botActivity property to bot's configuration that can set bot's activity status (details in documentation)
+## 1.2.1
+- added the ability to hide a command from the help message
+- the bot has no activity set by default
+- added the ability to hide the help command from the help message by editing config.helpMessage.hidden
+- some minor tweaks

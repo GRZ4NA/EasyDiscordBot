@@ -13,11 +13,7 @@ class EasyDiscordBot {
                 prefix: params.prefix ? params.prefix.toString() : "!",
                 botMessageDeleteTimeout: 5000,
                 accentColor: "#000",
-                botActivity: {
-                    title: `[prefix]help`,
-                    type: 'WATCHING',
-                    url: ''
-                },
+                botActivity: null,
                 responses: {
                     commandNotFound: 'The command "[command]" does not exist.',
                     insufficientPermissions: `You don't have the required permissions to use the "[command]" command.`,
@@ -25,7 +21,8 @@ class EasyDiscordBot {
                 },
                 helpMessage: {
                     header: `Help for [botName]`,
-                    description: `List of available commands`
+                    description: `List of available commands`,
+                    hidden: false
                 }
             };
             this.commandsList = [
@@ -34,6 +31,7 @@ class EasyDiscordBot {
                     description: "Displays list of available commands or detailed informations about specified command",
                     permissions: 0,
                     usage: '[command name (optional)]',
+                    hidden: false,
                     execute: async m => {
                         try {
                             if(m.command.arguments[0]) {
@@ -44,7 +42,7 @@ class EasyDiscordBot {
                                         title: command.name,
                                         description: this.stringProcessor(command.description),
                                         color: this.config.accentColor,
-                                        footer: this.name,
+                                        footer: command.hidden ? "Hidden" : "",
                                         showTimestamp: true,
                                         fields: fields
                                     });
@@ -167,13 +165,16 @@ class EasyDiscordBot {
             if(this.config.botActivity && typeof this.config.botActivity == 'object') {
                 await this.client.user.setActivity(this.stringProcessor(this.config.botActivity.title.toString()), { type: this.config.botActivity.type ? this.config.botActivity.type.toString().toUpperCase() : 'PLAYING', url: this.config.botActivity.url ? this.config.botActivity.url.toString() : undefined });
             }
+            if(this.config.helpMessage.hidden) {
+                this.getCommand('help').hidden = true
+            }
         }
         catch(e) {
             this.events.onError(e);
             return;
         }
     }
-    addCommand(name, description, permissions, callFunction, keywords, usage) {
+    addCommand(name, description, permissions, callFunction, keywords, usage, hidden) {
         try {
             const commandObject = new DiscordBotCommand({
                 name: name,
@@ -181,7 +182,8 @@ class EasyDiscordBot {
                 permissions: permissions,
                 keywords: keywords,
                 usage: usage,
-                execute: callFunction
+                execute: callFunction,
+                hidden: hidden
             });
             if(this.getCommand(name)) {
                 throw new ReferenceError(`The command ${name} already exists in this instance.`);

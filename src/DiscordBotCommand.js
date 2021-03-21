@@ -8,6 +8,7 @@ class DiscordBotCommand {
         this.permissions = undefined;
         this.keywords = undefined;
         this.usage = undefined;
+        this.hidden = undefined;
 
         //NAME
         if(params.name && typeof params.name == 'string') {
@@ -141,6 +142,14 @@ class DiscordBotCommand {
             if(params.execute instanceof Function) {
                 this.execute = params.execute;
             }
+        }
+
+        //HIDE
+        if(params.hidden) {
+            this.hidden = true;
+        }
+        else {
+            this.hidden = false;
         }
     }
     execute(message) {

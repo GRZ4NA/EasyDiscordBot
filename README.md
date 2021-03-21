@@ -1,5 +1,5 @@
 # EasyDiscordBot
-Version 1.2.0
+Version 1.2.1
 
 **NOTE! Since I'm the only person that created this package I can't take care of everything so in some cases my code may behave not as expected. Feel free to contribute to this project by submitting a change or a bug.**
 
@@ -16,18 +16,24 @@ Version 1.2.0
 - [Fetching objects](#fetching-objects)
 
 ## Installation
-Install this package using:
-
-`npm i ezdiscordbot`
-
-Then import it to your project:
-
-`import { EasyDiscordBot } from 'ezdiscordbot';`
+1. Install the package:
+```
+npm i ezdiscordbot
+```
+2. Import it to your project:
+```
+import { EasyDiscordBot } from 'ezdiscordbot';
+```
+3. Insert the following line in your package.json file:
+```
+"type": "module"
+```
 
 ## Getting started
 Create your bot's instance:
-
-`const bot = new EasyDiscordBot(params);`
+```
+const bot = new EasyDiscordBot(params);
+```
 
 params - an object that contains bot's basic configuration
 - name - string - your bot's name (will appear in help message)
@@ -35,8 +41,9 @@ params - an object that contains bot's basic configuration
 - discordToken - string - Discord bot token
 
 Connect your app to Discord using:
-
-`bot.start(port);`
+```
+bot.start(port);
+```
 
 - port - string (optional) - if specified, the app will create an http server and start listening on specified port
 
@@ -45,8 +52,9 @@ The package contains 1 built-in command:
 - `help [command name (optional)]` - shows commands list or details about `[command name]`
 
 You can add your own commands by using:
-
-`bot.addCommand(name, description, permissions, callFunction, keywords, usage);`
+```
+bot.addCommand(name, description, permissions, callFunction, keywords, usage, hidden);
+```
 
 - name - string - command name (It's being used to start the command)
 - description - string - command description that will appear in the help message
@@ -54,6 +62,7 @@ You can add your own commands by using:
 - callFunction - function - being called when using a command (first argument is a message object)
 - keywords - array (string) - array of keywords that can trigger the commnand without prefix
 - usage - string - usage instructions that will be displayed in help message
+- hidden - boolean - if it's `true`, the command will not appear in the help message
 
 ### Command arguments
 Command arguments are located in the "command" property of every "message" object.
@@ -70,8 +79,9 @@ Command arguments are located in the "command" property of every "message" objec
 ### Text processing
 This class has stringProcessor function built-in (**do not overwrite it**)
 It's being called every time your bot sends a message but you have to manually include it in your own commands.
-
-`bot.stringProcessor(string, message)`
+```
+bot.stringProcessor(string, message);
+```
 
 - string - string - a string that will be processed
 - message - object (Message) - a Message instance that will be used to replace `[command]`
@@ -93,8 +103,9 @@ There are 4 main events:
     + message - object (optional) - a message object that will be used to reply to the caller with error message
 
 These 4 functions are located in the "events" property. You can easily overwrite them. Example:
-
-`bot.events.onReady = () => console.log('Bot is ready!')`
+```
+bot.events.onReady = () => console.log('Bot is ready!')
+```
 
 ## Advanced configuration
 Configuration parameters are stored in the "config" property.
@@ -110,6 +121,7 @@ Configuration parameters are stored in the "config" property.
 - helpMessage - object:
     + header - string - Help message header
     + description - string - Help message bottom text
+    + hidden - boolean - if it's `true`, the help command will not appear in the help message
 - botActivity - object - an object that can will be used to set your bot's activity on Discord:
     + type - string - type of activity ([list](https://discord.js.org/#/docs/main/stable/typedef/ActivityType))
     + url - string (optional)
@@ -117,8 +129,9 @@ Configuration parameters are stored in the "config" property.
 
 ## Embed messages
 A static property is defined for creating embed content.
-
-`EasyDiscordBot.createEmbed(params)`
+```
+EasyDiscordBot.createEmbed(params);
+```
 
 params - object:
 - title - string - title of embed message
