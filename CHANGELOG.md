@@ -29,7 +29,3 @@
 - the bot has no activity set by default
 - added the ability to hide the help command from the help message by editing config.helpMessage.hidden
 - some minor tweaks
-## 1.2.2
-- fixed mistakes in documentation
-- getChannel, getRole, getUser methods don't require the first argument anymore (guild instance). These methods will now try to find the given ID in every available guild. (Previous syntax will still work but it's going to be removed in the future) 
-    `getRole(guild, id) -> getRole(id)`

@@ -1,7 +1,7 @@
 {
   "name": "ezdiscordbot",
   "description": "Create your own Discord bot in minutes.",
-  "version": "1.2.2",
+  "version": "1.2.1",
   "main": "EasyDiscordBot.js",
   "type": "module",
   "scripts": {

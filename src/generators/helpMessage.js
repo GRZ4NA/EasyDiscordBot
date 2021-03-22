@@ -35,7 +35,7 @@ async function createCommandHelp(botInstance, command, message) {
         if(permissions.roles instanceof Array && permissions.roles.length > 0) {
             const roleArray = [];
             for(let i = 0; i < permissions.roles.length; i++) {
-                const role = await botInstance.getRole(permissions.roles[i]);
+                const role = await botInstance.getRole(message.guild, permissions.roles[i]);
                 if(role) {
                     roleArray.push(role.name);
                 }
@@ -45,7 +45,7 @@ async function createCommandHelp(botInstance, command, message) {
         if(permissions.users instanceof Array && permissions.users.length > 0) {
             const userArray = [];
             for(let i = 0; i < permissions.users.length; i++) {
-                const user = await botInstance.getUser(permissions.users[i]);
+                const user = await botInstance.getUser(message.guild, permissions.users[i]);
                 if(user) {
                     userArray.push(user.user.username + '#' + user.user.discriminator);
                 }
