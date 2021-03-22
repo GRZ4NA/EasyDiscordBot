@@ -1,5 +1,5 @@
 # EasyDiscordBot
-Version 1.2.1
+Version 1.2.1 (UPDATED)
 
 **NOTE! Since I'm the only person that created this package I can't take care of everything so in some cases my code may behave not as expected. Feel free to contribute to this project by submitting a change or a bug.**
 
