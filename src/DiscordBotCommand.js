@@ -68,6 +68,7 @@ class DiscordBotCommand {
                 }
                 //BACKWARDS COMPATIBILITY
                 if(params.permissions.admin == true) {
+                    console.warn("WARN! The { admin: true } property is deprecated and support for it will be removed in the future. Please use { permissions: ['ADMINISTRATOR'] } instead.")
                     this.permissions.permissions = [];
                     this.permissions.permissions.push('ADMINISTRATOR');
                 }

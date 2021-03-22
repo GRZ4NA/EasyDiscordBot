@@ -1,6 +1,7 @@
 # EasyDiscordBot
-Version 1.2.1 (UPDATED)
+Version 1.2.2
 
+*Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 **NOTE! Since I'm the only person that created this package I can't take care of everything so in some cases my code may behave not as expected. Feel free to contribute to this project by submitting a change or a bug.**
 
 ## Table of contents
@@ -154,14 +155,11 @@ params - object:
 ## Fetching objects
 - Get guild by ID - getGuild(id) - returns Promise(Guild or `undefined`)
     + id - string - id of a guild
-- Get role by ID - getRole(guild, id) - returns Promise(Role or `undefined`)
-    + guild - object (Guild) - a Guild instance
+- Get role by ID - getRole(id) - returns Promise(Role or `undefined`)
     + id - string - role ID
-- Get channel by ID - getChannel(guild, id) - returns Channel, VoiceChannel, TextChannel, CategoryChannel or `undefined`
-    + guild - object (Guild) - a Guild instance
+- Get channel by ID - getChannel(id) - returns Channel, VoiceChannel, TextChannel, CategoryChannel or `undefined`
     + id - string - channel ID
-- Get user by ID - getUser(guild, id) - return Promise(Member or `undefined`)
-    + guild - object (Guild) - a Guild instance
+- Get user by ID - getUser(id) - return Promise(Member or `undefined`)
     + id - string - user ID
 - Get command by name - getCommand(name) - returns command object from commands list or `undefined`
     + name - string - command name

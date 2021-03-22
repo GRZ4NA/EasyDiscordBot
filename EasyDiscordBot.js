@@ -227,6 +227,8 @@ class EasyDiscordBot {
     async getRole(guild, id) {
         try {
             if(guild instanceof Guild) {
+                //DEPRECATED (BACKWARDS COMPATIBILITY)
+                console.warn('WARN! getRole(guild, id) is deprecated and will be removed in the future. Please use getRole(id) instead.');
                 const role = await guild.roles.fetch(id);
                 if(role) {
                     return role;
@@ -236,7 +238,14 @@ class EasyDiscordBot {
                 }
             }
             else {
-                throw new TypeError('First parameter has to be an instance of the Guild class. Get it using the getGuild(id) method.');
+                const guilds = this.client.guilds.cache.array();
+                for(let i = 0; i < guilds.length; i++) {
+                    const role = await guilds[i].roles.fetch(guild);
+                    if(role) {
+                        return role;
+                    }
+                }
+                throw new ReferenceError(`Cannot find a role with ID ${guild}`);
             }
         }
         catch (e) {
@@ -246,16 +255,25 @@ class EasyDiscordBot {
     getChannel(guild, id) {
         try {
             if(guild instanceof Guild) {
+                //DEPRECATED (BACKWARDS COMPATIBILITY)
+                console.warn('WARN! getChannel(guild, id) is deprecated and will be removed in the future. Please use getChannel(id) instead.');
                 const channel = guild.channels.cache.get(id);
                 if(channel) {
                     return channel;
                 }
                 else {
-                    throw new ReferenceError(`Cannot find a channel with ID ${id} in ${guild.name}`)
+                    throw new ReferenceError(`Cannot find a channel with ID ${id} in ${guild.name}`);
                 }
             }
             else {
-                throw new TypeError('First parameter has to be an instance of the Guild class. Get it using the getGuild(id) method.');
+                const guilds = this.client.guilds.cache.array();
+                for(let i = 0; i < guilds.length; i++) {
+                    const channel = guilds[i].channels.cache.get(guild);
+                    if(channel) {
+                        return channel;
+                    }
+                }
+                throw new ReferenceError(`Cannot find a channel with ID ${guild}`);
             }
         }
         catch (e) {
@@ -265,16 +283,25 @@ class EasyDiscordBot {
     async getUser(guild, id) {
         try {
             if(guild instanceof Guild) {
+                //DEPRECATED (BACKWARDS COMPATIBILITY)
+                console.warn('WARN! getUser(guild, id) is deprecated and will be removed in the future. Please use getUser(id) instead.');
                 const user = await guild.members.fetch(id);
                 if(user) {
                     return user;
                 }
                 else {
-                    throw new ReferenceError(`Cannot find a user with ID ${id} in ${guild.name}`)
+                    throw new ReferenceError(`Cannot find a user with ID ${id} in ${guild.name}`);
                 }
             }
             else {
-                throw new TypeError('First parameter has to be an instance of the Guild class. Get it using the getGuild(id) method.');
+                const guilds = this.client.guilds.cache.array();
+                for(let i = 0; i < guilds.length; i++) {
+                    const user = await guilds[i].members.fetch(guild);
+                    if(user) {
+                        return user;
+                    }
+                }
+                throw new ReferenceError(`Cannot find a user with ID ${guild}`);
             }
         }
         catch (e) {
