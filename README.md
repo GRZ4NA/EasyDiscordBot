@@ -125,7 +125,7 @@ Configuration parameters are stored in the "config" property.
 - botActivity - object - an object that can will be used to set your bot's activity on Discord:
     + type - string - type of activity ([list](https://discord.js.org/#/docs/main/stable/typedef/ActivityType))
     + url - string (optional)
-    + name - string - activity name
+    + title - string - activity name
 
 ## Embed messages
 A static property is defined for creating embed content.
