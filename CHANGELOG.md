@@ -29,3 +29,12 @@
 - the bot has no activity set by default
 - added the ability to hide the help command from the help message by editing config.helpMessage.hidden
 - some minor tweaks
+## 1.2.2
+***NOTE! This version has been unpublished from npmjs because of the huge security issue that was discovered after publishing the package. If you're using this version, immediately roll back to version 1.2.1 using: `npm i ezdiscordbot@1.2.1`! The old syntax of getRole, getUser and getChannel methods is not going to be deprecated since it's change created this major vulnerability!***
+## 1.3.0
+- getChannel method is now asynchronous as well
+- added a warning about deprecation of "admin" property in permissions object (it's going to be removed in the future)
+- every get function which requires a Guild instance (getChannel, getRole, getUser) can now take a guild ID as the first argument
+- all get functions now return `null` instead of `undefined` if nothing matches
+- added new "show" command which displays informations about given object from the server (user, channel, role) (by default it's hidden)
+- few code cleanups and minor tweaks

@@ -3,7 +3,7 @@ function createHelpCommandsList(botInstance) {
     for(let i = 0; i < botInstance.commandsList.length; i++) {
         if(!botInstance.commandsList[i].hidden) {
             const commandObj = { inline: false };
-            commandObj.title = botInstance.config.prefix + botInstance.commandsList[i].name;
+            commandObj.title = `${botInstance.config.prefix}${botInstance.commandsList[i].name} ${botInstance.commandsList[i].usage ? botInstance.commandsList[i].usage : ""}`;
             commandObj.value = botInstance.stringProcessor(botInstance.commandsList[i].description);
             commands.push(commandObj);
         }

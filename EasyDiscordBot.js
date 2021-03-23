@@ -1,6 +1,7 @@
 import { Client, Guild, MessageEmbed } from "discord.js";
 import { DiscordBotCommand } from './src/DiscordBotCommand.js';
 import { createCommandHelp, createHelpCommandsList } from './src/generators/helpMessage.js';
+import { generateShowCommand } from './src/generators/showCommand.js';
 import http from 'http';
 
 class EasyDiscordBot {
@@ -23,6 +24,10 @@ class EasyDiscordBot {
                     header: `Help for [botName]`,
                     description: `List of available commands`,
                     hidden: false
+                },
+                showCommand: {
+                    enabled: true,
+                    hidden: true
                 }
             };
             this.commandsList = [
@@ -69,6 +74,66 @@ class EasyDiscordBot {
                             return;
                         }
                     }
+                }),
+                new DiscordBotCommand({
+                    name: 'show',
+                    description: 'Displays information about the given user, channel or role',
+                    usage: '[user/role/channel name]',
+                    permissions: 0,
+                    hidden: true,
+                    execute: async m => {
+                        try {
+                            if(m.command.arguments[0]) {
+                                let messageBody;
+                                if(m.command.arguments[0].startsWith('<@!')) {
+                                    const id = m.command.arguments[0].replace('<@!', '').replace('>', '');
+                                    const user = await this.getUser(m.guild, id);
+                                    if(user) {
+                                        messageBody = await generateShowCommand(user, this.config.accentColor);
+                                    }
+                                }
+                                else if(m.command.arguments[0].startsWith('<@&')) {
+                                    const id = m.command.arguments[0].replace('<@&', '').replace('>', '');
+                                    const role = await this.getRole(m.guild, id);
+                                    if(role) {
+                                        messageBody = await generateShowCommand(role, this.config.accentColor);
+                                    }
+                                }
+                                else if(m.command.arguments[0].startsWith('<#')) {
+                                    const id = m.command.arguments[0].replace('<#', '').replace('>', '');
+                                    const textChannel = await this.getChannel(m.guild, id);
+                                    if(textChannel) {
+                                        messageBody = await generateShowCommand(textChannel, this.config.accentColor);
+                                    }
+                                }
+                                else {
+                                    const id = m.command.arguments[0];
+                                    const user = await this.getUser(m.guild, id);
+                                    const role = await this.getRole(m.guild, id);
+                                    const channel = await this.getChannel(m.guild, id);
+                                    if(user) {
+                                        messageBody = await generateShowCommand(user, this.config.accentColor);
+                                    }
+                                    else if(role) {
+                                        messageBody = await generateShowCommand(role, this.config.accentColor);
+                                    }
+                                    else if(channel) {
+                                        messageBody = await generateShowCommand(channel, this.config.accentColor);
+                                    }
+                                    else {
+                                        throw new ReferenceError(`The ID "${id}" has not been found in ${m.guild.name}`);
+                                    }
+                                }
+                                const message = EasyDiscordBot.createEmbed(messageBody);
+                                await m.channel.send(message);
+                            }
+                            else {
+                                m.reply(this.stringProcessor('Object "[command]" has not been found in this server', {command:{isCommand: true, name: m.command.arguments[0]}})).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout ? this.config.botMessageDeleteTimeout : 5000}));
+                            }
+                        } catch (e) {
+                            this.events.onError(e, m);
+                        }
+                    }
                 })
             ];
             this.events = {
@@ -76,15 +141,15 @@ class EasyDiscordBot {
                     console.log('Bot is ready!');
                     return;
                 },
-                onMessage: message => {
+                onMessage: () => {
                     return;
                 },
-                onCommand: command => {
+                onCommand: () => {
                     return;
                 },
                 onError: (error, message) => {
                     if(message) {
-                        message.reply(this.stringProcessor(this.config.responses.botError, message) + ' ' + error.toString()).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout}));
+                        message.reply(error.toString() + ' ' + this.stringProcessor(this.config.responses.botError, message)).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout}));
                     }
                     console.error(error);
                     return;
@@ -161,12 +226,23 @@ class EasyDiscordBot {
                     this.events.onMessage(message);
                 }
             });
+            if(!this.config.helpMessage || typeof this.config.helpMessage !== 'object') {
+                const helpCommandIndex = this.commandsList.findIndex(c => c.name == 'help');
+                this.commandsList.splice(helpCommandIndex, 1);
+            }
+            else {
+                this.getCommand('help').hidden = typeof this.config.helpMessage.hidden == 'boolean' ? this.config.helpMessage.hidden : false;
+            }
+            if(!this.config.showCommand || typeof this.config.showCommand !== 'object' || !this.config.showCommand.enabled) {
+                const showCommandIndex = this.commandsList.findIndex(c => c.name == 'show');
+                this.commandsList.splice(showCommandIndex, 1);
+            }
+            else {
+                this.getCommand('show').hidden = typeof this.config.showCommand.hidden == 'boolean' ? this.config.showCommand.hidden : true;
+            }
             await this.client.login(this.config.discordToken);
             if(this.config.botActivity && typeof this.config.botActivity == 'object') {
                 await this.client.user.setActivity(this.stringProcessor(this.config.botActivity.title.toString()), { type: this.config.botActivity.type ? this.config.botActivity.type.toString().toUpperCase() : 'PLAYING', url: this.config.botActivity.url ? this.config.botActivity.url.toString() : undefined });
-            }
-            if(this.config.helpMessage.hidden) {
-                this.getCommand('help').hidden = true
             }
         }
         catch(e) {
@@ -193,7 +269,7 @@ class EasyDiscordBot {
         }
         catch (e) {
             this.events.onError(e);
-            return undefined;
+            return null;
         }
     }
     getCommand(name) {
@@ -207,7 +283,7 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            return undefined;
+            return null;
         }
     }
     async getGuild(id) {
@@ -221,7 +297,7 @@ class EasyDiscordBot {
             }
         }
         catch (e) {
-            return undefined;
+            return null;
         }
     }
     async getRole(guild, id) {
@@ -235,15 +311,30 @@ class EasyDiscordBot {
                     throw new ReferenceError(`Cannot find a role with ID ${id} in ${guild.name}`);
                 }
             }
+            else if(typeof guild == 'string') {
+                guild = await this.getGuild(guild);
+                if(guild) {
+                    const role = await guild.roles.fetch(id);
+                    if(role) {
+                        return role;
+                    }
+                    else {
+                        throw new ReferenceError(`Cannot find a role with ID ${id} in ${guild.name}`);
+                    }
+                }
+                else {
+                    throw new ReferenceError(`Cannot find the specified guild`);
+                }
+            }
             else {
-                throw new TypeError('First parameter has to be an instance of the Guild class. Get it using the getGuild(id) method.');
+                throw new TypeError('First parameter has to be an instance of the Guild class or a string.');
             }
         }
         catch (e) {
-            return undefined;
+            return null;
         }
     }
-    getChannel(guild, id) {
+    async getChannel(guild, id) {
         try {
             if(guild instanceof Guild) {
                 const channel = guild.channels.cache.get(id);
@@ -254,12 +345,27 @@ class EasyDiscordBot {
                     throw new ReferenceError(`Cannot find a channel with ID ${id} in ${guild.name}`)
                 }
             }
+            else if(typeof guild == 'string') {
+                guild = await this.getGuild(guild);
+                if(guild) {
+                    const channel = guild.channels.cache.get(id);
+                    if(channel) {
+                        return channel;
+                    }
+                    else {
+                        throw new ReferenceError(`Cannot find a channel with ID ${id} in ${guild.name}`)
+                    }
+                }
+                else {
+                    throw new ReferenceError(`Cannot find the specified guild`);
+                }
+            }
             else {
-                throw new TypeError('First parameter has to be an instance of the Guild class. Get it using the getGuild(id) method.');
+                throw new TypeError('First parameter has to be an instance of the Guild class or a string.');
             }
         }
         catch (e) {
-            return undefined;
+            return null;
         }
     }
     async getUser(guild, id) {
@@ -273,12 +379,27 @@ class EasyDiscordBot {
                     throw new ReferenceError(`Cannot find a user with ID ${id} in ${guild.name}`)
                 }
             }
+            else if(typeof guild == 'string') {
+                guild = await this.getGuild(guild);
+                if(guild) {
+                    const user = await guild.members.fetch(id);
+                    if(user) {
+                        return user;
+                    }
+                    else {
+                        throw new ReferenceError(`Cannot find a user with ID ${id} in ${guild.name}`)
+                    }
+                }
+                else {
+                    throw new ReferenceError(`Cannot find the specified guild`);
+                }
+            }
             else {
-                throw new TypeError('First parameter has to be an instance of the Guild class. Get it using the getGuild(id) method.');
+                throw new TypeError('First parameter has to be an instance of the Guild class or a string.');
             }
         }
         catch (e) {
-            return undefined;
+            return null;
         }
     }
     async permissionsProxy(message, command) {
