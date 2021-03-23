@@ -1,5 +1,5 @@
 # EasyDiscordBot
-Version 1.3.0
+Version 1.3.0-hotfix2
 
 *Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 
@@ -51,7 +51,7 @@ Arguments:
 ## Commands
 The package contains 2 built-in commands
 - `help [command name (optional)]` - shows commands list or details about `[command name]`
-- `show [role/user/channel ID/ping]` - shows details about given object (hidden by default)
+- `show [role/user/channel ID/ping]` - shows details about given object (hidden by default) (requires ADMINISTRATOR privileges)
 ```
 bot.config.helpMessage = null;      # disable "help" command
 bot.config.showCommand.enabled = false;     # disable "show" command

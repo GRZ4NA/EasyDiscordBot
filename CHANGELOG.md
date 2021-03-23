@@ -38,3 +38,5 @@
 - all get functions now return `null` instead of `undefined` if nothing matches
 - added new "show" command which displays informations about given object from the server (user, channel, role) (by default it's hidden)
 - few code cleanups and minor tweaks
+## 1.3.0-hotfix2
+- "show" command requires administrator privileges (security issue)

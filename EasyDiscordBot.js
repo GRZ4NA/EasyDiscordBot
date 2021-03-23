@@ -79,7 +79,9 @@ class EasyDiscordBot {
                     name: 'show',
                     description: 'Displays information about the given user, channel or role',
                     usage: '[user/role/channel name]',
-                    permissions: 0,
+                    permissions: {
+                        permissions: 'ADMINISTRATOR'
+                    },
                     hidden: true,
                     execute: async m => {
                         try {
