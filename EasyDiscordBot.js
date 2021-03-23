@@ -149,7 +149,7 @@ class EasyDiscordBot {
                 },
                 onError: (error, message) => {
                     if(message) {
-                        message.reply(error.toString() + ' ' + this.stringProcessor(this.config.responses.botError, message)).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout}));
+                        message.reply(error.toString() + '. ' + this.stringProcessor(this.config.responses.botError, message)).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout}));
                     }
                     console.error(error);
                     return;

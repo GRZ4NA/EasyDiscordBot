@@ -44,7 +44,7 @@ async function generateShowCommand(object, color) {
     }
     else if(object instanceof VoiceChannel) {
         if(object.parent) {
-            fields.push({title: 'Parent of:', value: object.parent.name, inline: false});
+            fields.push({title: 'Parent:', value: object.parent.name, inline: false});
         }
         if(object.userLimit || object.members) {
             fields.push({title: 'Users:', value: object.userLimit ? `${object.members.array().length}/${object.userLimit}` : object.members.array().length, inline: false});
@@ -66,7 +66,7 @@ async function generateShowCommand(object, color) {
     }
     else if(object instanceof TextChannel) {
         if(object.parent) {
-            fields.push({title: 'Parent of:', value: object.parent.name, inline: false});
+            fields.push({title: 'Parent:', value: object.parent.name, inline: false});
         }
         if(object.nsfw) {
             fields.push({title: 'NSFW:', value: 'YES', inline: false});
