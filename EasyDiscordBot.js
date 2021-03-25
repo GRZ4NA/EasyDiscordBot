@@ -51,40 +51,34 @@ class EasyDiscordBot {
                     usage: '[command name (optional)]',
                     hidden: false,
                     execute: async m => {
-                        try {
-                            if(m.command.arguments[0]) {
-                                const command = this.getCommand(m.command.arguments[0]);
-                                if(command) {
-                                    const fields = await createCommandHelp(this, command, m);
-                                    const message = EasyDiscordBot.createEmbed({
-                                        title: command.name,
-                                        description: this.stringProcessor(command.description),
-                                        color: this.config.accentColor,
-                                        footer: command.hidden ? "Hidden" : "",
-                                        showTimestamp: true,
-                                        fields: fields
-                                    });
-                                    await m.channel.send(message);
-                                }
-                                else {
-                                    m.reply(this.stringProcessor(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}})).then(m => m.delete({timeout: this.config.errorMessage.deleteTimeout ? this.config.errorMessage.deleteTimeout : 5000}));
-                                }
-                            }
-                            else {
-                                const commands = createHelpCommandsList(this);
+                        if(m.command.arguments[0]) {
+                            const command = this.getCommand(m.command.arguments[0]);
+                            if(command) {
+                                const fields = await createCommandHelp(this, command, m);
                                 const message = EasyDiscordBot.createEmbed({
-                                    title: this.stringProcessor(this.config.helpMessage.header),
+                                    title: command.name,
+                                    description: this.stringProcessor(command.description),
                                     color: this.config.accentColor,
-                                    description: this.stringProcessor(this.config.helpMessage.description),
-                                    footer: this.name,
-                                    fields: commands
+                                    footer: command.hidden ? "Hidden" : "",
+                                    showTimestamp: true,
+                                    fields: fields
                                 });
                                 await m.channel.send(message);
                             }
+                            else {
+                                m.reply(this.stringProcessor(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}})).then(m => m.delete({timeout: this.config.errorMessage.deleteTimeout ? this.config.errorMessage.deleteTimeout : 5000}));
+                            }
                         }
-                        catch (e) {
-                            this.events.onError(e, m);
-                            return;
+                        else {
+                            const commands = createHelpCommandsList(this);
+                            const message = EasyDiscordBot.createEmbed({
+                                title: this.stringProcessor(this.config.helpMessage.header),
+                                color: this.config.accentColor,
+                                description: this.stringProcessor(this.config.helpMessage.description),
+                                footer: this.name,
+                                fields: commands
+                            });
+                            await m.channel.send(message);
                         }
                     }
                 }),
@@ -97,56 +91,52 @@ class EasyDiscordBot {
                     },
                     hidden: true,
                     execute: async m => {
-                        try {
-                            if(m.command.arguments[0]) {
-                                let messageBody;
-                                if(m.command.arguments[0].startsWith('<@!')) {
-                                    const id = m.command.arguments[0].replace('<@!', '').replace('>', '');
-                                    const user = await this.getUser(m.guild, id);
-                                    if(user) {
-                                        messageBody = await generateShowCommand(user, this.config.accentColor, this);
-                                    }
+                        if(m.command.arguments[0]) {
+                            let messageBody;
+                            if(m.command.arguments[0].startsWith('<@!')) {
+                                const id = m.command.arguments[0].replace('<@!', '').replace('>', '');
+                                const user = await this.getUser(m.guild, id);
+                                if(user) {
+                                    messageBody = await generateShowCommand(user, this.config.accentColor, this);
                                 }
-                                else if(m.command.arguments[0].startsWith('<@&')) {
-                                    const id = m.command.arguments[0].replace('<@&', '').replace('>', '');
-                                    const role = await this.getRole(m.guild, id);
-                                    if(role) {
-                                        messageBody = await generateShowCommand(role, this.config.accentColor, this);
-                                    }
+                            }
+                            else if(m.command.arguments[0].startsWith('<@&')) {
+                                const id = m.command.arguments[0].replace('<@&', '').replace('>', '');
+                                const role = await this.getRole(m.guild, id);
+                                if(role) {
+                                    messageBody = await generateShowCommand(role, this.config.accentColor, this);
                                 }
-                                else if(m.command.arguments[0].startsWith('<#')) {
-                                    const id = m.command.arguments[0].replace('<#', '').replace('>', '');
-                                    const textChannel = await this.getChannel(m.guild, id);
-                                    if(textChannel) {
-                                        messageBody = await generateShowCommand(textChannel, this.config.accentColor, this);
-                                    }
+                            }
+                            else if(m.command.arguments[0].startsWith('<#')) {
+                                const id = m.command.arguments[0].replace('<#', '').replace('>', '');
+                                const textChannel = await this.getChannel(m.guild, id);
+                                if(textChannel) {
+                                    messageBody = await generateShowCommand(textChannel, this.config.accentColor, this);
                                 }
-                                else {
-                                    const id = m.command.arguments[0];
-                                    const user = await this.getUser(m.guild, id);
-                                    const role = await this.getRole(m.guild, id);
-                                    const channel = await this.getChannel(m.guild, id);
-                                    if(user) {
-                                        messageBody = await generateShowCommand(user, this.config.accentColor, this);
-                                    }
-                                    else if(role) {
-                                        messageBody = await generateShowCommand(role, this.config.accentColor, this);
-                                    }
-                                    else if(channel) {
-                                        messageBody = await generateShowCommand(channel, this.config.accentColor, this);
-                                    }
-                                    else {
-                                        throw new ReferenceError(`The ID "${id}" has not been found in ${m.guild.name}`);
-                                    }
-                                }
-                                const message = EasyDiscordBot.createEmbed(messageBody);
-                                await m.channel.send(message);
                             }
                             else {
-                                throw new ReferenceError('Object "[command]" has not been found in this server');
+                                const id = m.command.arguments[0];
+                                const user = await this.getUser(m.guild, id);
+                                const role = await this.getRole(m.guild, id);
+                                const channel = await this.getChannel(m.guild, id);
+                                if(user) {
+                                    messageBody = await generateShowCommand(user, this.config.accentColor, this);
+                                }
+                                else if(role) {
+                                    messageBody = await generateShowCommand(role, this.config.accentColor, this);
+                                }
+                                else if(channel) {
+                                    messageBody = await generateShowCommand(channel, this.config.accentColor, this);
+                                }
+                                else {
+                                    throw new ReferenceError(`The ID "${id}" has not been found in ${m.guild.name}`);
+                                }
                             }
-                        } catch (e) {
-                            this.events.onError(e, m);
+                            const message = EasyDiscordBot.createEmbed(messageBody);
+                            await m.channel.send(message);
+                        }
+                        else {
+                            throw new ReferenceError('Object "[command]" has not been found in this server');
                         }
                     }
                 })
