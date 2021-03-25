@@ -54,7 +54,7 @@
     + config.responses.insufficientPermissions has been moved to config.insufficientPermissions.description
     + config.responses.commandNotFound has been moved to config.commandNotFound.content
 - few minor changes
-- new package version system (includes betas and hotfixes)
+- new package version system (beta versions)
 ## 1.4.0-beta2
 - "show" command
     + can now display if user is a server owner
@@ -66,3 +66,5 @@
 - 1 minor fix
 ## 1.4.1
 - stability improvement - your bot won't crash if a command function throws an error. It will display an error message to the user instead.
+## 1.4.2
+- change from 1.4.1 now works with asynchronous functions as well (I forgot to add "await" in one place :D)

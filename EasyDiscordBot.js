@@ -246,7 +246,7 @@ class EasyDiscordBot {
                     if(command) {
                         if(await this.permissionsProxy(message, command)) {
                             try {
-                                command.execute(message);   
+                                await command.execute(message);   
                             } catch (e) {
                                 this.events.onError(e, message);
                             }

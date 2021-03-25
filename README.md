@@ -1,5 +1,5 @@
 # EasyDiscordBot
-Version 1.4.1
+Version 1.4.2
 
 *Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 
