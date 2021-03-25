@@ -307,7 +307,7 @@ class EasyDiscordBot {
             }
             if(this.config.responses.commandNotFound) {
                 this.config.commandNotFound.content = this.config.responses.commandNotFound;
-                console.warn('WARN! The "commandNotFound" response is going to be removed in the future. Please use config.commandNotFound.description instead.')
+                console.warn('WARN! The "commandNotFound" response is going to be removed in the future. Please use config.commandNotFound.content instead.')
             }
             await this.client.login(this.config.discordToken);
             if(this.config.botActivity && this.config.botActivity instanceof Object) {

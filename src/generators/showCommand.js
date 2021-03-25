@@ -33,8 +33,8 @@ async function generateShowCommand(object, color, botInstance) {
             fields.push({title: 'Permissions:', value: object.permissions.toArray().join(' \n'), inline: false});
         }
         return {
-            title: object.nickname ? object.nickname : object.user.tag,
-            description: `${object.nickname ? '- ' + object.user.tag + '\n' : ""}${'- ' + object.user.presence.status.toUpperCase() + '\n'}${object.guild.ownerID === object.id ? "- SERVER OWNER \n" : ""}${object.user.bot ? "- BOT \n" : ""}`,
+            title: object.nickname ? `${object.nickname}\n${object.user.tag}` : object.user.tag,
+            description: `${'- ' + object.user.presence.status.toUpperCase() + '\n'}${object.guild.ownerID === object.id ? "- SERVER OWNER \n" : ""}${object.user.bot ? "- BOT \n" : ""}`,
             showTimestamp: true,
             color: color ? color : '#666666',
             thumbnail: object.user.displayAvatarURL(),

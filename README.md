@@ -1,7 +1,5 @@
 # EasyDiscordBot
-Version 1.4.0-beta2
-
-This version may contain some bugs since it hasn't been fully tested yet. Documentation for the latest stable release can be found [here](https://github.com/GRZ4NA/EasyDiscordBot/blob/bf4c50c438f0e78984be7b05005c3e82a4986fb9/README.md). If you find a bug, typo etc, report it to me using the Issues tab on GitHub or make your own pull request.
+Version 1.4.0
 
 *Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 
@@ -133,6 +131,7 @@ Configuration parameters are stored in the "config" property.
     + type - string - type of activity ([list](https://discord.js.org/#/docs/main/stable/typedef/ActivityType))
     + url - string (optional)
     + title - string - activity name
+**To disable these 3 messages, change these properties' type to something, that's not an object**
 - errorMessage - object - used to configure the appearance of an error message
     + header - string - title of an error message
     + description - string - bottom text of an error message

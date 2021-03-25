@@ -60,3 +60,7 @@
     + can now display if user is a server owner
     + small changes to the layout
     + fixed category channels permission overwrites
+## 1.4.0
+- "show" command
+    + minor visual tweaks
+- 1 minor fix
