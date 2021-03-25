@@ -16,30 +16,30 @@ async function generateShowCommand(object, color, botInstance) {
                 fields.push({title: 'Activities:', value: formatted.join(' '), inline: false});
             }
         }
-        if(object.roles) {
-            let roles = object.roles.cache.array();
-            for(let i = 0; i < roles.length; i++) {
-                roles[i] = roles[i].name;
-            }
-            fields.push({title: 'Roles:', value: roles.join(', '), inline: false});
-        }
         if(object.user.createdAt) {
             fields.push({title: 'Account creation date:', value: object.user.createdAt.toLocaleDateString(undefined, dateFormatting), inline: false});
         }
         if(object.joinedAt) {
             fields.push({title: `Joined server at:`, value: object.joinedAt.toLocaleDateString(undefined, dateFormatting), inline: false});
         }
+        if(object.roles) {
+            let roles = object.roles.cache.array();
+            for(let i = 0; i < roles.length; i++) {
+                roles[i] = roles[i].name;
+            }
+            fields.push({title: 'Roles:', value: roles.join(' \n'), inline: false});
+        }
         if(object.permissions.toArray().length > 0) {
             fields.push({title: 'Permissions:', value: object.permissions.toArray().join(' \n'), inline: false});
         }
         return {
             title: object.nickname ? object.nickname : object.user.tag,
-            description: `${object.nickname ? object.user.tag + ' -'  : ''} ${object.user.presence.status.toUpperCase()}`,
+            description: `${object.nickname ? '- ' + object.user.tag + '\n' : ""}${'- ' + object.user.presence.status.toUpperCase() + '\n'}${object.guild.ownerID === object.id ? "- SERVER OWNER \n" : ""}${object.user.bot ? "- BOT \n" : ""}`,
             showTimestamp: true,
             color: color ? color : '#666666',
             thumbnail: object.user.displayAvatarURL(),
             fields: fields,
-            footer: `${object.user.bot ? "[BOT]" : ""} ID: ${object.id}`
+            footer: `ID: ${object.id}`
         }
     }
     else if(object instanceof VoiceChannel) {
@@ -151,30 +151,6 @@ async function generateShowCommand(object, color, botInstance) {
                 });
             }
         }
-        return {
-            title: object.name,
-            description: 'Category channel',
-            footer: `ID: ${object.id}`,
-            color: color ? color : '#666666',
-            showTimestamp: true,
-            fields: fields
-        }
-    }
-    else if(object instanceof Role) {
-        if(object.color) {
-            fields.push({
-                title: 'Color:',
-                value: `${object.color} (${object.hexColor})`,
-                inline: false
-            });
-        }
-        if(object.permissions.toArray().length > 0) {
-            fields.push({
-                title: 'Permissions:',
-                value: object.permissions.toArray().join(' \n'),
-                inline: false
-            });
-        }
         if(object.permissionOverwrites) {
             const overwrites = object.permissionOverwrites.array();
             for(let i = 0; i < overwrites.length; i++) {
@@ -206,6 +182,30 @@ async function generateShowCommand(object, color, botInstance) {
                     });
                 }
             }
+        }
+        return {
+            title: object.name,
+            description: 'Category channel',
+            footer: `ID: ${object.id}`,
+            color: color ? color : '#666666',
+            showTimestamp: true,
+            fields: fields
+        }
+    }
+    else if(object instanceof Role) {
+        if(object.color) {
+            fields.push({
+                title: 'Color:',
+                value: `${object.color} (${object.hexColor})`,
+                inline: false
+            });
+        }
+        if(object.permissions.toArray().length > 0) {
+            fields.push({
+                title: 'Permissions:',
+                value: object.permissions.toArray().join(' \n'),
+                inline: false
+            });
         }
         return {
             title: object.name,

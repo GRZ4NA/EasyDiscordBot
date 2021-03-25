@@ -55,3 +55,8 @@
     + config.responses.commandNotFound has been moved to config.commandNotFound.content
 - few minor changes
 - new package version system (includes betas and hotfixes)
+## 1.4.0-beta2
+- "show" command
+    + can now display if user is a server owner
+    + small changes to the layout
+    + fixed category channels permission overwrites

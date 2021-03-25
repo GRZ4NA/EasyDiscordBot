@@ -1,5 +1,5 @@
 # EasyDiscordBot
-Version 1.4.0-beta1
+Version 1.4.0-beta2
 
 This version may contain some bugs since it hasn't been fully tested yet. Documentation for the latest stable release can be found [here](https://github.com/GRZ4NA/EasyDiscordBot/blob/bf4c50c438f0e78984be7b05005c3e82a4986fb9/README.md). If you find a bug, typo etc, report it to me using the Issues tab on GitHub or make your own pull request.
 
