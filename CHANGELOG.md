@@ -64,3 +64,5 @@
 - "show" command
     + minor visual tweaks
 - 1 minor fix
+## 1.4.1
+- stability improvement - your bot won't crash if a command function throws an error. It will display an error message to the user instead.

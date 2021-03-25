@@ -245,7 +245,11 @@ class EasyDiscordBot {
                     const command = this.getCommand(message.command.name);
                     if(command) {
                         if(await this.permissionsProxy(message, command)) {
-                            command.execute(message);
+                            try {
+                                command.execute(message);   
+                            } catch (e) {
+                                this.events.onError(e, message);
+                            }
                         }
                         else {
                             if(this.config.insufficientPermissions instanceof Object) {
