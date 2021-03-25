@@ -1,5 +1,7 @@
 # EasyDiscordBot
-Version 1.3.0-hotfix2
+Version 1.4.0-beta1
+
+This version may contain some bugs since it hasn't been fully tested yet. Documentation for the latest stable release can be found [here](https://github.com/GRZ4NA/EasyDiscordBot/blob/bf4c50c438f0e78984be7b05005c3e82a4986fb9/README.md). If you find a bug, typo etc, report it to me using the Issues tab on GitHub or make your own pull request.
 
 *Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 
@@ -122,12 +124,7 @@ bot.client.on('channelCreate', c => {
 Configuration parameters are stored in the "config" property.
 - discordToken - string - your bot's token
 - prefix - string - bot's prefix
-- botMessageDeleteTimeout - number - time (in ms) after which bot's error messages will be deleted
 - accentColor - string (HEX or RGB) - used to set color of embed messages
-- responses - object
-    + commandNotFound - string - is being sent when somebody tries to call the command that does not exist
-    + insufficientPermissions - string - is being sent when the caller does not have required permissions
-    + botError - string - is being sent when an error occurs
 - helpMessage - object
     + header - string - Help message header
     + description - string - Help message bottom text
@@ -136,6 +133,21 @@ Configuration parameters are stored in the "config" property.
     + type - string - type of activity ([list](https://discord.js.org/#/docs/main/stable/typedef/ActivityType))
     + url - string (optional)
     + title - string - activity name
+- errorMessage - object - used to configure the appearance of an error message
+    + header - string - title of an error message
+    + description - string - bottom text of an error message
+    + color - string - color of the embedded content
+    + detailsTitle - string - title of details field
+    + deleteTimeout - number - time (in ms) after which an error message will be deleted
+- insufficientPermissions - object - used to configure the appearance of a permission error message
+    + header - string - title of the message
+    + description - string - bottom text of the message
+    + color - string - color of the embedded content
+    + deleteTimeout - number - time (in ms) after which the message will be deleted
+- commandNotFound - object - used to configure the appearance of a "command not found" message
+    + content - string - message to the user
+    + color - string - color of the embedded content
+    + deleteTimeout - number - time (in ms) after which the message will be deleted
 
 ## Embed messages
 A static property is defined for creating embedded content.

@@ -12,22 +12,35 @@ class EasyDiscordBot {
             this.config = {
                 discordToken: params.discordToken ? params.discordToken.toString() : undefined,
                 prefix: params.prefix ? params.prefix.toString() : "!",
-                botMessageDeleteTimeout: 5000,
                 accentColor: "#000",
                 botActivity: null,
-                responses: {
-                    commandNotFound: 'The command "[command]" does not exist.',
-                    insufficientPermissions: `You don't have the required permissions to use the "[command]" command.`,
-                    botError: `An error occurred when executing command "[command]".`
-                },
+                responses: {/*BACKWARDS COMPATIBILITY*/},
                 helpMessage: {
-                    header: `Help for [botName]`,
+                    header: `📘 Help for [botName]`,
                     description: `List of available commands`,
                     hidden: false
                 },
                 showCommand: {
                     enabled: true,
                     hidden: true
+                },
+                errorMessage: {
+                    header: '❌ An error occurred',
+                    description: `An error occurred when executing command "[command]".`,
+                    color: '#ff0000',
+                    detailsTitle: 'Details:',
+                    deleteTimeout: 5000
+                },
+                insufficientPermissions: {
+                    header: '👮‍♂️ Insufficient permissions',
+                    description: `You don't have the required permissions to use the "[command]" command.`,
+                    color: '#1d1dc4',
+                    deleteTimeout: 5000
+                },
+                commandNotFound: {
+                    content: '🔍 Command "[command]" does not exist',
+                    color: '#ff5500',
+                    deleteTimeout: 3000
                 }
             };
             this.commandsList = [
@@ -54,7 +67,7 @@ class EasyDiscordBot {
                                     await m.channel.send(message);
                                 }
                                 else {
-                                    m.reply(this.stringProcessor(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}})).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout ? this.config.botMessageDeleteTimeout : 5000}));
+                                    m.reply(this.stringProcessor(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}})).then(m => m.delete({timeout: this.config.errorMessage.deleteTimeout ? this.config.errorMessage.deleteTimeout : 5000}));
                                 }
                             }
                             else {
@@ -91,21 +104,21 @@ class EasyDiscordBot {
                                     const id = m.command.arguments[0].replace('<@!', '').replace('>', '');
                                     const user = await this.getUser(m.guild, id);
                                     if(user) {
-                                        messageBody = await generateShowCommand(user, this.config.accentColor);
+                                        messageBody = await generateShowCommand(user, this.config.accentColor, this);
                                     }
                                 }
                                 else if(m.command.arguments[0].startsWith('<@&')) {
                                     const id = m.command.arguments[0].replace('<@&', '').replace('>', '');
                                     const role = await this.getRole(m.guild, id);
                                     if(role) {
-                                        messageBody = await generateShowCommand(role, this.config.accentColor);
+                                        messageBody = await generateShowCommand(role, this.config.accentColor, this);
                                     }
                                 }
                                 else if(m.command.arguments[0].startsWith('<#')) {
                                     const id = m.command.arguments[0].replace('<#', '').replace('>', '');
                                     const textChannel = await this.getChannel(m.guild, id);
                                     if(textChannel) {
-                                        messageBody = await generateShowCommand(textChannel, this.config.accentColor);
+                                        messageBody = await generateShowCommand(textChannel, this.config.accentColor, this);
                                     }
                                 }
                                 else {
@@ -114,13 +127,13 @@ class EasyDiscordBot {
                                     const role = await this.getRole(m.guild, id);
                                     const channel = await this.getChannel(m.guild, id);
                                     if(user) {
-                                        messageBody = await generateShowCommand(user, this.config.accentColor);
+                                        messageBody = await generateShowCommand(user, this.config.accentColor, this);
                                     }
                                     else if(role) {
-                                        messageBody = await generateShowCommand(role, this.config.accentColor);
+                                        messageBody = await generateShowCommand(role, this.config.accentColor, this);
                                     }
                                     else if(channel) {
-                                        messageBody = await generateShowCommand(channel, this.config.accentColor);
+                                        messageBody = await generateShowCommand(channel, this.config.accentColor, this);
                                     }
                                     else {
                                         throw new ReferenceError(`The ID "${id}" has not been found in ${m.guild.name}`);
@@ -130,7 +143,7 @@ class EasyDiscordBot {
                                 await m.channel.send(message);
                             }
                             else {
-                                m.reply(this.stringProcessor('Object "[command]" has not been found in this server', {command:{isCommand: true, name: m.command.arguments[0]}})).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout ? this.config.botMessageDeleteTimeout : 5000}));
+                                throw new ReferenceError('Object "[command]" has not been found in this server');
                             }
                         } catch (e) {
                             this.events.onError(e, m);
@@ -151,7 +164,25 @@ class EasyDiscordBot {
                 },
                 onError: (error, message) => {
                     if(message) {
-                        message.reply(error.toString() + '. ' + this.stringProcessor(this.config.responses.botError, message)).then(m => m.delete({timeout: this.config.botMessageDeleteTimeout}));
+                        if(this.config.errorMessage instanceof Object) {
+                            const details = EasyDiscordBot.createEmbed({
+                                title: this.stringProcessor(this.config.errorMessage.header ? this.config.errorMessage.header.toString() : "❌ An error occurred"),
+                                color: this.config.errorMessage.color ? this.config.errorMessage.color.toString() : '#ff0000',
+                                description: this.stringProcessor(this.config.errorMessage.description ? this.config.errorMessage.description.toString() : message.content.toString(), message),
+                                footer: this.stringProcessor('[botName]'),
+                                showTimestamp: true,
+                                fields: [
+                                    {
+                                        title: this.stringProcessor(this.config.errorMessage.detailsTitle ? this.config.errorMessage.detailsTitle.toString() : "Details:"),
+                                        value: error.toString(),
+                                        inline: false
+                                    }
+                                ]
+                            });
+                            message.channel.send(details).then(m => {
+                                m.delete({ timeout: typeof this.config.errorMessage.deleteTimeout == 'number' ? this.config.errorMessage.deleteTimeout : 5000});
+                            });
+                        }
                     }
                     console.error(error);
                     return;
@@ -217,33 +248,69 @@ class EasyDiscordBot {
                             command.execute(message);
                         }
                         else {
-                            message.reply(this.stringProcessor(this.config.responses.insufficientPermissions, message)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
+                            if(this.config.insufficientPermissions instanceof Object) {
+                                message.channel.send(EasyDiscordBot.createEmbed({
+                                    title: this.stringProcessor(this.config.insufficientPermissions.header ? this.config.insufficientPermissions.header.toString() : "👮‍♂️ Insufficient permissions"),
+                                    color: this.config.insufficientPermissions.color ? this.config.insufficientPermissions.color : "#1d1dc4",
+                                    description: this.stringProcessor(this.config.insufficientPermissions.description ? this.config.insufficientPermissions.description.toString() : `You don't have the required permissions to use the "[command]" command.`, message),
+                                    footer: this.stringProcessor('[botName]'),
+                                    showTimestamp: true
+                                })).then(m => {
+                                    m.delete({timeout: typeof this.config.insufficientPermissions.deleteTimeout == 'number' ? this.config.insufficientPermissions.deleteTimeout : 5000});
+                                });
+                            }
                         }
                     }
                     else {
-                        message.reply(this.stringProcessor(this.config.responses.commandNotFound, message)).then(m => { if(this.config.botMessageDeleteTimeout) { m.delete({ timeout: this.config.botMessageDeleteTimeout }) } });
+                        if(this.config.commandNotFound instanceof Object) {
+                            message.channel.send(EasyDiscordBot.createEmbed({
+                                title: this.stringProcessor(this.config.commandNotFound.content ? this.config.commandNotFound.content.toString() : `🔍 Command "[command]" does not exist`, message),
+                                color: this.config.commandNotFound.color ? this.config.commandNotFound.color : "#ff5500",
+                                showTimestamp: true,
+                                footer: this.stringProcessor('[botName]')
+                            })).then(m => {
+                                m.delete({timeout: typeof this.config.commandNotFound.deleteTimeout == 'number' ? this.config.commandNotFound.deleteTimeout : 5000});
+                            })
+                        }
                     }
                 }
                 else {
                     this.events.onMessage(message);
                 }
             });
-            if(!this.config.helpMessage || typeof this.config.helpMessage !== 'object') {
+            if(!this.config.helpMessage || !this.config.helpMessage instanceof Object) {
                 const helpCommandIndex = this.commandsList.findIndex(c => c.name == 'help');
                 this.commandsList.splice(helpCommandIndex, 1);
             }
             else {
                 this.getCommand('help').hidden = typeof this.config.helpMessage.hidden == 'boolean' ? this.config.helpMessage.hidden : false;
             }
-            if(!this.config.showCommand || typeof this.config.showCommand !== 'object' || !this.config.showCommand.enabled) {
+            if(!this.config.showCommand || !this.config.showCommand instanceof Object || !this.config.showCommand.enabled) {
                 const showCommandIndex = this.commandsList.findIndex(c => c.name == 'show');
                 this.commandsList.splice(showCommandIndex, 1);
             }
             else {
                 this.getCommand('show').hidden = typeof this.config.showCommand.hidden == 'boolean' ? this.config.showCommand.hidden : true;
             }
+            //DEPRECATED (BACKWARDS COMPATIBILITY)
+            if(this.config.botMessageDeleteTimeout && typeof this.config.botMessageDeleteTimeout == 'number') {
+                this.config.errorMessage.deleteTimeout = this.config.botMessageDeleteTimeout;
+                console.warn('WARN! The property "botMessageDeleteTimeout" is going to be removed in the future. Please use config.errorMessage.deleteTimeout instead.');
+            }
+            if(this.config.responses.botError) {
+                this.config.errorMessage.description = this.config.responses.botError;
+                console.warn('WARN! The "botError" response is going to be removed in the future. Please use config.errorMessage.description instead.')
+            }
+            if(this.config.responses.insufficientPermissions) {
+                this.config.insufficientPermissions.description = this.config.responses.insufficientPermissions;
+                console.warn('WARN! The "insufficientPermissions" response is going to be removed in the future. Please use config.insufficientPermissions.description instead.')
+            }
+            if(this.config.responses.commandNotFound) {
+                this.config.commandNotFound.content = this.config.responses.commandNotFound;
+                console.warn('WARN! The "commandNotFound" response is going to be removed in the future. Please use config.commandNotFound.description instead.')
+            }
             await this.client.login(this.config.discordToken);
-            if(this.config.botActivity && typeof this.config.botActivity == 'object') {
+            if(this.config.botActivity && this.config.botActivity instanceof Object) {
                 await this.client.user.setActivity(this.stringProcessor(this.config.botActivity.title.toString()), { type: this.config.botActivity.type ? this.config.botActivity.type.toString().toUpperCase() : 'PLAYING', url: this.config.botActivity.url ? this.config.botActivity.url.toString() : undefined });
             }
         }

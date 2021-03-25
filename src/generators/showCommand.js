@@ -1,6 +1,6 @@
 import { GuildMember, Role, VoiceChannel, TextChannel, CategoryChannel } from 'discord.js';
 
-async function generateShowCommand(object, color) {
+async function generateShowCommand(object, color, botInstance) {
     const fields = [];
     const dateFormatting = {weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'};
     if(object instanceof GuildMember) {
@@ -29,8 +29,8 @@ async function generateShowCommand(object, color) {
         if(object.joinedAt) {
             fields.push({title: `Joined server at:`, value: object.joinedAt.toLocaleDateString(undefined, dateFormatting), inline: false});
         }
-        if(object.premiumSince) {
-            fields.push({title: 'Server booster since:', value: object.premiumSince.toLocaleDateString(undefined, dateFormatting), inline: false})
+        if(object.permissions.toArray().length > 0) {
+            fields.push({title: 'Permissions:', value: object.permissions.toArray().join(' \n'), inline: false});
         }
         return {
             title: object.nickname ? object.nickname : object.user.tag,
@@ -47,13 +47,42 @@ async function generateShowCommand(object, color) {
             fields.push({title: 'Parent:', value: object.parent.name, inline: false});
         }
         if(object.userLimit || object.members) {
-            fields.push({title: 'Users:', value: object.userLimit ? `${object.members.array().length}/${object.userLimit}` : object.members.array().length, inline: false});
-        }
-        if(object.permissionsLocked === false) {
-            fields.push({title: "Private channel:", value: 'YES', inline: false});
+            fields.push({title: 'Connected:', value: object.userLimit ? `${object.members.array().length}/${object.userLimit}` : object.members.array().length, inline: false});
         }
         if(object.bitrate) {
             fields.push({title: 'Bitrate:', value: object.bitrate, inline: false});
+        }
+        if(object.permissionOverwrites) {
+            const overwrites = object.permissionOverwrites.array();
+            for(let i = 0; i < overwrites.length; i++) {
+                let serverObject;
+                if(overwrites[i].type == 'member') {
+                    serverObject = await botInstance.getUser(object.guild, overwrites[i].id);
+                    serverObject = serverObject.displayName;
+                }
+                else {
+                    serverObject = await botInstance.getRole(object.guild, overwrites[i].id);
+                    serverObject = serverObject.name;
+                }
+
+                let allowedString, deniedString;
+                if(overwrites[i].allow.toArray().length > 0) {
+                    allowedString = "Allowed: \n";
+                    allowedString += overwrites[i].allow.toArray().join(' \n');
+                }
+                if(overwrites[i].deny.toArray().length > 0) {
+                    deniedString = "Denied: \n";
+                    deniedString += overwrites[i].deny.toArray().join(' \n');
+                }
+                const perms = allowedString ? allowedString : "" + " \n" + deniedString ? deniedString : ""; 
+                if(perms) {
+                    fields.push({
+                        title: `Permissions for: ${serverObject}`,
+                        value: perms,
+                        inline: false
+                    });
+                }
+            }
         }
         return {
             title: object.name,
@@ -71,8 +100,37 @@ async function generateShowCommand(object, color) {
         if(object.nsfw) {
             fields.push({title: 'NSFW:', value: 'YES', inline: false});
         }
-        if(object.permissionsLocked === false) {
-            fields.push({title: "Private channel:", value: 'YES', inline: false});
+        if(object.permissionOverwrites) {
+            const overwrites = object.permissionOverwrites.array();
+            for(let i = 0; i < overwrites.length; i++) {
+                let serverObject;
+                if(overwrites[i].type == 'member') {
+                    serverObject = await botInstance.getUser(object.guild, overwrites[i].id);
+                    serverObject = serverObject.displayName;
+                }
+                else {
+                    serverObject = await botInstance.getRole(object.guild, overwrites[i].id);
+                    serverObject = serverObject.name;
+                }
+
+                let allowedString, deniedString;
+                if(overwrites[i].allow.toArray().length > 0) {
+                    allowedString = "Allowed: \n";
+                    allowedString += overwrites[i].allow.toArray().join(' \n');
+                }
+                if(overwrites[i].deny.toArray().length > 0) {
+                    deniedString = "Denied: \n";
+                    deniedString += overwrites[i].deny.toArray().join(' \n');
+                }
+                const perms = allowedString ? allowedString : "" + " \n" + deniedString ? deniedString : ""; 
+                if(perms) {
+                    fields.push({
+                        title: `Permissions for: ${serverObject}`,
+                        value: perms,
+                        inline: false
+                    });
+                }
+            }
         }
         return {
             title: object.name,
@@ -103,20 +161,6 @@ async function generateShowCommand(object, color) {
         }
     }
     else if(object instanceof Role) {
-        if(object.hoist) {
-            fields.push({
-                title: 'Separated:',
-                value: 'YES',
-                inline: false
-            });
-        }
-        if(object.mentionable) {
-            fields.push({
-                title: 'Can be mentioned:',
-                value: 'YES',
-                inline: false
-            });
-        }
         if(object.color) {
             fields.push({
                 title: 'Color:',
@@ -124,9 +168,48 @@ async function generateShowCommand(object, color) {
                 inline: false
             });
         }
+        if(object.permissions.toArray().length > 0) {
+            fields.push({
+                title: 'Permissions:',
+                value: object.permissions.toArray().join(' \n'),
+                inline: false
+            });
+        }
+        if(object.permissionOverwrites) {
+            const overwrites = object.permissionOverwrites.array();
+            for(let i = 0; i < overwrites.length; i++) {
+                let serverObject;
+                if(overwrites[i].type == 'member') {
+                    serverObject = await botInstance.getUser(object.guild, overwrites[i].id);
+                    serverObject = serverObject.displayName;
+                }
+                else {
+                    serverObject = await botInstance.getRole(object.guild, overwrites[i].id);
+                    serverObject = serverObject.name;
+                }
+
+                let allowedString, deniedString;
+                if(overwrites[i].allow.toArray().length > 0) {
+                    allowedString = "Allowed: \n";
+                    allowedString += overwrites[i].allow.toArray().join(' \n');
+                }
+                if(overwrites[i].deny.toArray().length > 0) {
+                    deniedString = "Denied: \n";
+                    deniedString += overwrites[i].deny.toArray().join(' \n');
+                }
+                const perms = allowedString ? allowedString : "" + " \n" + deniedString ? deniedString : ""; 
+                if(perms) {
+                    fields.push({
+                        title: `Permissions for: ${serverObject}`,
+                        value: perms,
+                        inline: false
+                    });
+                }
+            }
+        }
         return {
             title: object.name,
-            description: `Users: ${object.members.array().length}`,
+            description: object.members.array().length == 1 ? `${object.members.array().length} member has this role` : `${object.members.array().length} members have this role`,
             color: object.hexColor != '#000000' ? object.hexColor : color ? color : '#666666',
             footer: `ID: ${object.id}`,
             showTimestamp: true,

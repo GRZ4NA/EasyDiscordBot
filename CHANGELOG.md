@@ -40,3 +40,18 @@
 - few code cleanups and minor tweaks
 ## 1.3.0-hotfix2
 - "show" command requires administrator privileges (security issue)
+## 1.4.0-beta1
+- "show" command updates
+    + it can now display user's permissions
+    + it can now display detailed permissions for the given channel instead of "Private channel: YES"
+- new appearance of error, "insufficient permissions" and "command not found" messages
+    + embedded content
+    + more user friendly appearance
+    + configurable (more on that in documentation)
+- object structure changes (You can still use these old properties in this version, but that is going to be changed in the future)
+    + config.responses.botError has been moved to config.errorMessage.description 
+    + config.botMessageDeleteTimeout has been moved to config.errorMessage.deleteTimeout
+    + config.responses.insufficientPermissions has been moved to config.insufficientPermissions.description
+    + config.responses.commandNotFound has been moved to config.commandNotFound.content
+- few minor changes
+- new package version system (includes betas and hotfixes)
