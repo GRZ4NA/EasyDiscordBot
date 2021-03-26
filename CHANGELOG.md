@@ -68,3 +68,10 @@
 - stability improvement - your bot won't crash if a command function throws an error. It will display an error message to the user instead.
 ## 1.4.2
 - change from 1.4.1 now works with asynchronous functions as well (I forgot to add "await" in one place :D)
+## 1.5.0-beta1
+- added command aliases
+    + add aliases by inserting an array into the first argument of the addCommand method (first element of the array is your command's name)
+    + aliases will display in the help message
+    + getCommand and addCommand methods have been reworked to handle this new feature properly (the usage is still the same and they are backwards compatible)
+- command permissions and keywords in "help" message are now being shown in separated lines (1 per line)
+- few tweaks and code cleanups

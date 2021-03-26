@@ -1,5 +1,7 @@
 # EasyDiscordBot
-Version 1.4.2
+1.5.0-beta1
+
+This version may contain some bugs since it hasn't been fully tested yet. Documentation for the latest stable release can be found [here](https://github.com/GRZ4NA/EasyDiscordBot/blob/e3a6fc5b65feed26110eec73bd4d9cf12c08a6d1/README.md). If you find a bug, typo etc, report it to me using the Issues tab on GitHub or make your own pull request.
 
 *Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 
@@ -63,7 +65,11 @@ You can add your own commands by using
 bot.addCommand(name, description, permissions, callFunction, keywords, usage, hidden);
 ```
 Arguments
-- name - string - command name (It's being used to start the command)
+- name
+    + string - your command name that will be used to trigger the command
+    + array (string)
+        * first element is the command name
+        * other elements are aliases that can also be used to trigger the command
 - description - string - command description that will appear in the help message
 - permissions - object or null - command usage permissions
 - callFunction - function - being called when using a command (first argument is a message object)
@@ -81,6 +87,7 @@ Command arguments are located in the "command" property of every "message" objec
 - permissions - array (string) - contains names of privileges that are permitted to use the command (list of permissions available [here](https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS))
 - roles - array (string) - contains IDs of roles that are permitted to use the command
 - users - array (string)  - contains IDs of users that are permitted to use the command
+
 **NOTE! The caller has to meet at least 1 requirement to start a command.**
 
 ### Text processing
@@ -131,6 +138,7 @@ Configuration parameters are stored in the "config" property.
     + type - string - type of activity ([list](https://discord.js.org/#/docs/main/stable/typedef/ActivityType))
     + url - string (optional)
     + title - string - activity name
+
 **To disable these 3 messages, change these properties' type to something, that's not an object**
 - errorMessage - object - used to configure the appearance of an error message
     + header - string - title of an error message
