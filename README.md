@@ -1,5 +1,5 @@
 # EasyDiscordBot
-1.5.0-beta2
+1.5.0-beta3
 
 This version may contain some bugs since it hasn't been fully tested yet. Documentation for the latest stable release can be found [here](https://github.com/GRZ4NA/EasyDiscordBot/blob/e3a6fc5b65feed26110eec73bd4d9cf12c08a6d1/README.md). If you find a bug, typo etc, report it to me using the Issues tab on GitHub or make your own pull request.
 
@@ -53,7 +53,7 @@ Arguments:
 ## Commands
 The package contains 2 built-in commands
 - `help [command name (optional)]` - shows commands list or details about `[command name]`
-- `show [role/user/channel ID/ping]` - shows details about given object (hidden by default) (requires ADMINISTRATOR privileges)
+- `show [role/user/channel/server ID/ping]` - shows details about given object (hidden by default) (requires ADMINISTRATOR privileges)
 ```
 bot.config.helpMessage = null;      # disable "help" command
 bot.config.showCommand.enabled = false;     # disable "show" command

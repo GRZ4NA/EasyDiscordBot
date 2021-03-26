@@ -1,6 +1,6 @@
-import { GuildMember, Role, VoiceChannel, TextChannel, CategoryChannel } from 'discord.js';
+import { GuildMember, Role, VoiceChannel, TextChannel, CategoryChannel, Guild } from 'discord.js';
 
-async function generateShowCommand(object, color, botInstance) {
+async function generateShowCommand(object, botInstance) {
     const fields = [];
     const dateFormatting = {weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'};
     if(object instanceof GuildMember) {
@@ -36,7 +36,7 @@ async function generateShowCommand(object, color, botInstance) {
             title: object.nickname ? `${object.nickname}\n${object.user.tag}` : object.user.tag,
             description: `${'- ' + object.user.presence.status.toUpperCase() + '\n'}${object.guild.ownerID === object.id ? "- SERVER OWNER \n" : ""}${object.user.bot ? "- BOT \n" : ""}`,
             showTimestamp: true,
-            color: color ? color : '#666666',
+            color: botInstance.config.accentColor ? botInstance.config.accentColor : '#666666',
             thumbnail: object.user.displayAvatarURL(),
             fields: fields,
             footer: `ID: ${object.id}`
@@ -88,7 +88,7 @@ async function generateShowCommand(object, color, botInstance) {
             title: object.name,
             description: "Voice Channel",
             footer: `ID: ${object.id}`,
-            color: color ? color: '#666666',
+            color: botInstance.config.accentColor ? botInstance.config.accentColor: '#666666',
             showTimestamp: true,
             fields: fields
         }
@@ -136,7 +136,7 @@ async function generateShowCommand(object, color, botInstance) {
             title: object.name,
             description: object.topic ? object.topic : "Text channel",
             footer: `ID: ${object.id}`,
-            color: color ? color: '#666666',
+            color: botInstance.config.accentColor ? botInstance.config.accentColor: '#666666',
             showTimestamp: true,
             fields: fields
         }
@@ -187,7 +187,7 @@ async function generateShowCommand(object, color, botInstance) {
             title: object.name,
             description: 'Category channel',
             footer: `ID: ${object.id}`,
-            color: color ? color : '#666666',
+            color: botInstance.config.accentColor ? botInstance.config.accentColor : '#666666',
             showTimestamp: true,
             fields: fields
         }
@@ -210,10 +210,91 @@ async function generateShowCommand(object, color, botInstance) {
         return {
             title: object.name,
             description: object.members.array().length == 1 ? `${object.members.array().length} member has this role` : `${object.members.array().length} members have this role`,
-            color: object.hexColor != '#000000' ? object.hexColor : color ? color : '#666666',
+            color: object.hexColor != '#000000' ? object.hexColor : botInstance.config.accentColor ? botInstance.config.accentColor : '#666666',
             footer: `ID: ${object.id}`,
             showTimestamp: true,
             fields: fields
+        }
+    }
+    else if(object instanceof Guild) {
+        if(object.owner) {
+            fields.push({
+                title: 'Server owner:',
+                value: object.owner.user.tag,
+                inline: false
+            });
+        }
+        if(object.createdAt) {
+            fields.push({
+                title: 'Server creation date:',
+                value: object.createdAt.toLocaleDateString(undefined, dateFormatting),
+                inline: false
+            });
+        }
+        if(object.region) {
+            fields.push({
+                title: 'Region:',
+                value: object.region.charAt(0).toUpperCase() + object.region.slice(1).toLowerCase(),
+                inline: false
+            });
+        }
+        if(object.premiumTier !== 0) {
+            fields.push({
+                title: 'Server boosting:',
+                value: `Tier ${object.premiumTier}`,
+                inline: false
+            });
+        }
+        if(object.afkChannel) {
+            fields.push({
+                title: 'AFK channel:',
+                value: object.afkChannel.name,
+                inline: false
+            });
+        }
+        if(object.verified) {
+            fields.push({
+                title: 'Verified:',
+                value: 'YES',
+                inline: true
+            });
+        }
+        if(object.memberCount) {
+            fields.push({
+                title: 'Members:',
+                value: object.memberCount,
+                inline: true
+            });
+        }
+        if(object.channels.cache) {
+            fields.push({
+                title: 'Channels:',
+                value: object.channels.cache.array().length,
+                inline: true
+            });
+        }
+        if(object.roles.cache) {
+            fields.push({
+                title: 'Roles:',
+                value: object.roles.cache.array().length,
+                inline: true
+            });
+        }
+        if(object.emojis.cache && object.emojis.cache.array().length !== 0) {
+            fields.push({
+                title: 'Emotes:',
+                value: object.emojis.cache.array().length,
+                inline: true
+            });
+        }
+        return {
+            title: object.name,
+            description: object.description ? object.description : "",
+            color: botInstance.config.accentColor ? botInstance.config.accentColor : '#666666',
+            footer: `ID: ${object.id}`,
+            showTimestamp: true,
+            fields: fields,
+            thumbnail: object.me.user.displayAvatarURL()
         }
     }
 }

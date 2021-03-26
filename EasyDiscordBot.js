@@ -87,7 +87,7 @@ class EasyDiscordBot {
                 }),
                 new DiscordBotCommand({
                     name: 'show',
-                    description: 'Displays information about the given user, channel or role',
+                    description: 'Displays information about the given user, channel, server or role',
                     usage: '[user/role/channel name]',
                     permissions: {
                         permissions: 'ADMINISTRATOR'
@@ -100,36 +100,40 @@ class EasyDiscordBot {
                                 const id = m.command.arguments[0].replace('<@!', '').replace('>', '');
                                 const user = await this.getUser(m.guild, id);
                                 if(user) {
-                                    messageBody = await generateShowCommand(user, this.config.accentColor, this);
+                                    messageBody = await generateShowCommand(user, this);
                                 }
                             }
                             else if(m.command.arguments[0].startsWith('<@&')) {
                                 const id = m.command.arguments[0].replace('<@&', '').replace('>', '');
                                 const role = await this.getRole(m.guild, id);
                                 if(role) {
-                                    messageBody = await generateShowCommand(role, this.config.accentColor, this);
+                                    messageBody = await generateShowCommand(role, this);
                                 }
                             }
                             else if(m.command.arguments[0].startsWith('<#')) {
                                 const id = m.command.arguments[0].replace('<#', '').replace('>', '');
                                 const textChannel = await this.getChannel(m.guild, id);
                                 if(textChannel) {
-                                    messageBody = await generateShowCommand(textChannel, this.config.accentColor, this);
+                                    messageBody = await generateShowCommand(textChannel, this);
                                 }
                             }
                             else {
                                 const id = m.command.arguments[0];
                                 const user = await this.getUser(m.guild, id);
+                                const guild = await this.getGuild(id);
                                 const role = await this.getRole(m.guild, id);
                                 const channel = await this.getChannel(m.guild, id);
                                 if(user) {
-                                    messageBody = await generateShowCommand(user, this.config.accentColor, this);
+                                    messageBody = await generateShowCommand(user, this);
+                                }
+                                else if(guild && guild.id == m.guild.id) {
+                                    messageBody = await generateShowCommand(guild, this);
                                 }
                                 else if(role) {
-                                    messageBody = await generateShowCommand(role, this.config.accentColor, this);
+                                    messageBody = await generateShowCommand(role, this);
                                 }
                                 else if(channel) {
-                                    messageBody = await generateShowCommand(channel, this.config.accentColor, this);
+                                    messageBody = await generateShowCommand(channel, this);
                                 }
                                 else {
                                     throw new ReferenceError(`The ID "${id}" has not been found in ${m.guild.name}`);

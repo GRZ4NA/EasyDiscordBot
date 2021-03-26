@@ -79,3 +79,7 @@
 - fixed a bug that made the prefix stack up and make aliases unusable + caused "help" command to display incorrectly
 - changed the appearance of "command does not exist" message in "help" command to an error style
 - "help" command can now remove prefix if it was passed with an argument (for example: `!help !show` is going to act as intended now)
+## 1.5.0-beta3
+- "show" command can now display informations about servers (guilds)
+    + call it by using `show [your server ID]`
+    + you can only view informations about your own server (for security reasons)
