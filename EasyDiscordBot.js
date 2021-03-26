@@ -26,7 +26,7 @@ class EasyDiscordBot {
                 },
                 errorMessage: {
                     header: '❌ An error occurred',
-                    description: `An error occurred when executing command "[command]".`,
+                    description: `An error occurred when executing the "[command]" command.`,
                     color: '#ff0000',
                     detailsTitle: 'Details:',
                     deleteTimeout: 5000
@@ -52,6 +52,9 @@ class EasyDiscordBot {
                     hidden: false,
                     execute: async m => {
                         if(m.command.arguments[0]) {
+                            if(m.command.arguments[0].startsWith(this.config.prefix)) {
+                                m.command.arguments[0] = m.command.arguments[0].replace(this.config.prefix, '');
+                            }
                             const command = this.getCommand(m.command.arguments[0]);
                             if(command) {
                                 const fields = await createCommandHelp(this, command, m);
@@ -66,7 +69,7 @@ class EasyDiscordBot {
                                 await m.channel.send(message);
                             }
                             else {
-                                m.reply(this.stringProcessor(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}})).then(m => m.delete({timeout: this.config.errorMessage.deleteTimeout ? this.config.errorMessage.deleteTimeout : 5000}));
+                                throw new ReferenceError(this.stringProcessor(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}}))
                             }
                         }
                         else {

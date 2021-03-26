@@ -22,12 +22,13 @@ async function createCommandHelp(botInstance, command, message) {
         });
     }
     if(command.aliases) {
+        const prefixAlias = [];
         for(let i = 0; i < command.aliases.length; i++) {
-            command.aliases[i] = `${botInstance.config.prefix}${command.aliases[i]}`;
+            prefixAlias[i] = `${botInstance.config.prefix}${command.aliases[i]}`;
         }
         fields.push({
             title: 'Aliases:',
-            value: command.aliases.join('\n'),
+            value: prefixAlias.join('\n'),
             inline: false
         })
     }

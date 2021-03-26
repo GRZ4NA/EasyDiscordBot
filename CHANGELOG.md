@@ -75,3 +75,7 @@
     + getCommand and addCommand methods have been reworked to handle this new feature properly (the usage is still the same and they are backwards compatible)
 - command permissions and keywords in "help" message are now being shown in separated lines (1 per line)
 - few tweaks and code cleanups
+## 1.5.0-beta2
+- fixed a bug that made the prefix stack up and make aliases unusable + caused "help" command to display incorrectly
+- changed the appearance of "command does not exist" message in "help" command to an error style
+- "help" command can now remove prefix if it was passed with an argument (for example: `!help !show` is going to act as intended now)
