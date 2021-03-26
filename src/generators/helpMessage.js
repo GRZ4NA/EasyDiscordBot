@@ -21,16 +21,26 @@ async function createCommandHelp(botInstance, command, message) {
             inline: false
         });
     }
+    if(command.aliases) {
+        for(let i = 0; i < command.aliases.length; i++) {
+            command.aliases[i] = `${botInstance.config.prefix}${command.aliases[i]}`;
+        }
+        fields.push({
+            title: 'Aliases:',
+            value: command.aliases.join('\n'),
+            inline: false
+        })
+    }
     if(command.keywords && command.keywords.length !== 0) {
         fields.push({
             title: "Keywords:",
-            value: command.keywords.join(', '),
+            value: command.keywords.join('\n'),
             inline: false
         });
     }
     if(typeof permissions == 'object') {
         if(permissions.permissions instanceof Array && permissions.permissions.length > 0) {
-            fields.push({ title: "Permissions:", value: permissions.permissions.join(', '), inline: false });
+            fields.push({ title: "Permissions:", value: permissions.permissions.join('\n'), inline: false });
         }
         if(permissions.roles instanceof Array && permissions.roles.length > 0) {
             const roleArray = [];
@@ -40,7 +50,7 @@ async function createCommandHelp(botInstance, command, message) {
                     roleArray.push(role.name);
                 }
             }
-            if(roleArray.length > 0) { fields.push({ title: "Roles:", value: roleArray.join(', '), inline: false }); }
+            if(roleArray.length > 0) { fields.push({ title: "Roles:", value: roleArray.join('\n'), inline: false }); }
         }
         if(permissions.users instanceof Array && permissions.users.length > 0) {
             const userArray = [];
@@ -50,7 +60,7 @@ async function createCommandHelp(botInstance, command, message) {
                     userArray.push(user.user.username + '#' + user.user.discriminator);
                 }
             }
-            if(userArray.length > 0) { fields.push({ title: "Users:", value: userArray.join(', '), inline: false }); }
+            if(userArray.length > 0) { fields.push({ title: "Users:", value: userArray.join('\n'), inline: false }); }
         }
     }
     return fields;

@@ -4,6 +4,7 @@ class DiscordBotCommand {
     constructor(params) {
         //INITIALIZE
         this.name = undefined;
+        this.aliases = undefined;
         this.description = undefined;
         this.permissions = undefined;
         this.keywords = undefined;
@@ -11,14 +12,38 @@ class DiscordBotCommand {
         this.hidden = undefined;
 
         //NAME
-        if(params.name && typeof params.name == 'string') {
-            this.name = params.name.toString().split(' ').join('');
-            if(this.name.length === 0) {
-                throw new Error('Incorrect command name');
+        if(params.name) {
+            if(typeof params.name == 'string') {
+                this.name = params.name.toString().split(' ').join('');
+                if(this.name.length === 0) {
+                    throw new Error('Incorrect command name');
+                }
+            }
+            else if(params.name instanceof Array) {
+                if(params.name.length == 0) {
+                    throw new RangeError('Name array cannot be empty');
+                }
+                this.name = params.name[0].toString().split(' ').join('');
+                if(this.name.length === 0) {
+                    throw new Error('Incorrect command name');
+                }
+                params.name.splice(0, 1);
+                if(params.name.length !== 0) {
+                    this.aliases = [];
+                    for(let i = 0; i < params.name.length; i++) {
+                        params.name[i] = params.name[i].toString().split(' ').join('');
+                        if(params.name[i].length !== 0) {
+                            this.aliases.push(params.name[i]);
+                        }
+                    }
+                    if(this.aliases.length === 0) {
+                        this.aliases = undefined;
+                    }
+                }
             }
         }
         else {
-            throw new TypeError('Command name is not a string');
+            throw new TypeError('Command name is not a string or array');
         }
 
         //DESCRIPTION

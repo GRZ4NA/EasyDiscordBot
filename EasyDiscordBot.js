@@ -324,8 +324,20 @@ class EasyDiscordBot {
                 execute: callFunction,
                 hidden: hidden
             });
-            if(this.getCommand(name)) {
-                throw new ReferenceError(`The command ${name} already exists in this instance.`);
+            if(this.getCommand(commandObject.name)) {
+                throw new ReferenceError(`The command "${commandObject.name}" already exists in this instance.`);
+            }
+            if(commandObject.aliases) {
+                for(let i = 0; i < commandObject.aliases.length; i++) {
+                    if(this.getCommand(commandObject.aliases[i])) {
+                        console.warn(`The alias "${commandObject.aliases[i]}" is already registered as a command name or an alias for some other command in this instance. It will be removed from the "${commandObject.name}" command.`);
+                        commandObject.aliases.splice(i, 1);
+                        i--;
+                    }
+                }
+                if(commandObject.aliases.length === 0) {
+                    commandObject.aliases = undefined;
+                }
             }
             this.commandsList.push(commandObject);
             return commandObject;   
@@ -337,12 +349,22 @@ class EasyDiscordBot {
     }
     getCommand(name) {
         try {
-            const command = this.commandsList.find(c => c.name == name);
-            if(command) {
-                return command;
-            }
-            else {
-                throw new ReferenceError(`Command ${name} does not exist in this instance.`);
+            if(typeof name == 'string') {
+                const command = this.commandsList.find(c => c.name == name);
+                if(command) {
+                    return command;
+                }
+                else {
+                    for(let i = 0; i < this.commandsList.length; i++) {
+                        if(this.commandsList[i].aliases) {
+                            const alias = this.commandsList[i].aliases.find(a => a == name);
+                            if(alias) {
+                                return this.commandsList[i];
+                            }
+                        }
+                    }
+                    throw new ReferenceError(`Command ${name} does not exist in this instance.`);
+                }
             }
         }
         catch (e) {
