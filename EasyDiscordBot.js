@@ -14,7 +14,6 @@ class EasyDiscordBot {
                 prefix: params.prefix ? params.prefix.toString() : "!",
                 accentColor: "#000",
                 botActivity: null,
-                responses: {/*BACKWARDS COMPATIBILITY*/},
                 helpMessage: {
                     header: `📘 Help for [botName]`,
                     description: `List of available commands`,
@@ -292,23 +291,6 @@ class EasyDiscordBot {
             }
             else {
                 this.getCommand('show').hidden = typeof this.config.showCommand.hidden == 'boolean' ? this.config.showCommand.hidden : true;
-            }
-            //DEPRECATED (BACKWARDS COMPATIBILITY)
-            if(this.config.botMessageDeleteTimeout && typeof this.config.botMessageDeleteTimeout == 'number') {
-                this.config.errorMessage.deleteTimeout = this.config.botMessageDeleteTimeout;
-                console.warn('WARN! The property "botMessageDeleteTimeout" is going to be removed in the future. Please use config.errorMessage.deleteTimeout instead.');
-            }
-            if(this.config.responses.botError) {
-                this.config.errorMessage.description = this.config.responses.botError;
-                console.warn('WARN! The "botError" response is going to be removed in the future. Please use config.errorMessage.description instead.')
-            }
-            if(this.config.responses.insufficientPermissions) {
-                this.config.insufficientPermissions.description = this.config.responses.insufficientPermissions;
-                console.warn('WARN! The "insufficientPermissions" response is going to be removed in the future. Please use config.insufficientPermissions.description instead.')
-            }
-            if(this.config.responses.commandNotFound) {
-                this.config.commandNotFound.content = this.config.responses.commandNotFound;
-                console.warn('WARN! The "commandNotFound" response is going to be removed in the future. Please use config.commandNotFound.content instead.')
             }
             await this.client.login(this.config.discordToken);
             if(this.config.botActivity && this.config.botActivity instanceof Object) {
