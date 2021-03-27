@@ -83,3 +83,5 @@
 - "show" command can now display informations about servers (guilds)
     + call it by using `show [your server ID]`
     + you can only view informations about your own server (for security reasons)
+## 1.5.0
+- some minor tweaks

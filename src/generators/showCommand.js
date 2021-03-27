@@ -259,6 +259,13 @@ async function generateShowCommand(object, botInstance) {
                 inline: true
             });
         }
+        if(object.partnered) {
+            fields.push({
+                title: 'Partnered:',
+                value: 'YES',
+                inline: true
+            });
+        }
         if(object.memberCount) {
             fields.push({
                 title: 'Members:',

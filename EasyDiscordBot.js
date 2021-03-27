@@ -88,7 +88,7 @@ class EasyDiscordBot {
                 new DiscordBotCommand({
                     name: 'show',
                     description: 'Displays information about the given user, channel, server or role',
-                    usage: '[user/role/channel name]',
+                    usage: '[user/role/channel/server ID/ping]',
                     permissions: {
                         permissions: 'ADMINISTRATOR'
                     },
