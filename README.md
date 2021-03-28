@@ -3,7 +3,7 @@
 
 *Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 
-**NOTE! Since I'm the only person that created this package I can't take care of everything so in some cases my code may behave not as expected. Feel free to contribute to this project by submitting a change or a bug.**
+**Since I'm the only person that created this package I can't take care of everything so in some cases my code may behave not as expected. Feel free to contribute to this project by submitting a change or a bug.**
 
 ## Table of contents
 - [Installation](#installation)
@@ -86,7 +86,7 @@ Command arguments are located in the "command" property of every "message" objec
 - roles - array (string) - contains IDs of roles that are permitted to use the command
 - users - array (string)  - contains IDs of users that are permitted to use the command
 
-**NOTE! The caller has to meet at least 1 requirement to start a command.**
+**The caller has to meet at least 1 requirement to start a command.**
 
 ### Text processing
 This class has stringProcessor function built-in (**do not overwrite it**)
@@ -122,6 +122,8 @@ bot.client.on('channelCreate', c => {
     console.log('Created channel:', c.name);
 });
 ```
+
+**Using `bot.client.on('message')` instead of `bot.events.onReady` will overwrite the message processor that's built-in to this package. If you do this, your bot will not react to any command.**
 
 ## Advanced configuration
 Configuration parameters are stored in the "config" property.
