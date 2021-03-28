@@ -1,4 +1,4 @@
-import { Client, Guild, MessageEmbed } from "discord.js";
+import { Client, Guild, MessageEmbed, APIMessage, Message, User, GuildMember } from "discord.js";
 import { DiscordBotCommand } from './src/DiscordBotCommand.js';
 import { createCommandHelp, createHelpCommandsList } from './src/generators/helpMessage.js';
 import { generateShowCommand } from './src/generators/showCommand.js';
@@ -14,7 +14,6 @@ class EasyDiscordBot {
                 prefix: params.prefix ? params.prefix.toString() : "!",
                 accentColor: "#000",
                 botActivity: null,
-                responses: {/*BACKWARDS COMPATIBILITY*/},
                 helpMessage: {
                     header: `📘 Help for [botName]`,
                     description: `List of available commands`,
@@ -220,6 +219,31 @@ class EasyDiscordBot {
                     for(let i = 0; i < message.command.arguments.length; i++) {
                         message.command.arguments[i] = message.command.arguments[i].replace(' ', '');
                     }
+                    message.reply = (content, options) => {
+                        content = this.stringProcessor(content, message);
+                        return message.channel.send(
+                            content instanceof APIMessage ? content : APIMessage.transformOptions(content, options, { reply: message.member || message.author }),
+                        );
+                    }
+                    message.channel.send = async (content, options) => {
+                        if(message.channel instanceof User || message.channel instanceof GuildMember) {
+                            return message.channel.createDM().then(dm => dm.send(this.stringProcessor(content, message), options));
+                        }
+                        let apiMessage;
+                        if(content instanceof APIMessage) {
+                            apiMessage = content.resolveData();
+                        } 
+                        else {
+                            apiMessage = APIMessage.create(message.channel, this.stringProcessor(content, message), options).resolveData();
+                            if(Array.isArray(apiMessage.data.content)) {
+                                return Promise.all(apiMessage.split().map(message.channel.send.bind(message.channel)));
+                            }
+                        }
+                        const { data, files } = await apiMessage.resolveFiles();
+                        return this.client.api.channels[message.channel.id].messages
+                            .post({ data, files })
+                            .then(d => message.channel.client.actions.MessageCreate.handle(d).message);
+                    }
                 }
                 else {
                     for(let i = 0; i < this.commandsList.length; i++) {
@@ -231,6 +255,31 @@ class EasyDiscordBot {
                                 message.command.arguments = message.content.replace(message.content.split(' ')[0], '').split(',');
                                 for(let j = 0; j < message.command.arguments.length; j++) {
                                     message.command.arguments[j] = message.command.arguments[j].replace(' ', '');
+                                }
+                                message.reply = (content, options) => {
+                                    content = this.stringProcessor(content, message);
+                                    return message.channel.send(
+                                        content instanceof APIMessage ? content : APIMessage.transformOptions(content, options, { reply: message.member || message.author }),
+                                    );
+                                }
+                                message.channel.send = async (content, options) => {
+                                    if(message.channel instanceof User || message.channel instanceof GuildMember) {
+                                        return message.channel.createDM().then(dm => dm.send(this.stringProcessor(content, message), options));
+                                    }
+                                    let apiMessage;
+                                    if(content instanceof APIMessage) {
+                                        apiMessage = content.resolveData();
+                                    } 
+                                    else {
+                                        apiMessage = APIMessage.create(message.channel, this.stringProcessor(content, message), options).resolveData();
+                                        if(Array.isArray(apiMessage.data.content)) {
+                                            return Promise.all(apiMessage.split().map(message.channel.send.bind(message.channel)));
+                                        }
+                                    }
+                                    const { data, files } = await apiMessage.resolveFiles();
+                                    return this.client.api.channels[message.channel.id].messages
+                                        .post({ data, files })
+                                        .then(d => message.channel.client.actions.MessageCreate.handle(d).message);
                                 }
                             }
                         }
@@ -292,23 +341,6 @@ class EasyDiscordBot {
             }
             else {
                 this.getCommand('show').hidden = typeof this.config.showCommand.hidden == 'boolean' ? this.config.showCommand.hidden : true;
-            }
-            //DEPRECATED (BACKWARDS COMPATIBILITY)
-            if(this.config.botMessageDeleteTimeout && typeof this.config.botMessageDeleteTimeout == 'number') {
-                this.config.errorMessage.deleteTimeout = this.config.botMessageDeleteTimeout;
-                console.warn('WARN! The property "botMessageDeleteTimeout" is going to be removed in the future. Please use config.errorMessage.deleteTimeout instead.');
-            }
-            if(this.config.responses.botError) {
-                this.config.errorMessage.description = this.config.responses.botError;
-                console.warn('WARN! The "botError" response is going to be removed in the future. Please use config.errorMessage.description instead.')
-            }
-            if(this.config.responses.insufficientPermissions) {
-                this.config.insufficientPermissions.description = this.config.responses.insufficientPermissions;
-                console.warn('WARN! The "insufficientPermissions" response is going to be removed in the future. Please use config.insufficientPermissions.description instead.')
-            }
-            if(this.config.responses.commandNotFound) {
-                this.config.commandNotFound.content = this.config.responses.commandNotFound;
-                console.warn('WARN! The "commandNotFound" response is going to be removed in the future. Please use config.commandNotFound.content instead.')
             }
             await this.client.login(this.config.discordToken);
             if(this.config.botActivity && this.config.botActivity instanceof Object) {
@@ -532,10 +564,15 @@ class EasyDiscordBot {
         }
     }
     stringProcessor(string, message) {
-        string = string.split('[botName]').join(this.name);
-        string = string.split('[prefix]').join(this.config.prefix);
-        string = string.split('[command]').join(message && message.command && message.command.isCommand ? message.command.name : "");
-        return string;
+        if(typeof string == 'string') {
+            string = string.split('[botName]').join(this.name);
+            string = string.split('[prefix]').join(this.config.prefix);
+            string = string.split('[command]').join(message instanceof Message && message.command && message.command.isCommand ? message.command.name : "");
+            return string;
+        }
+        else {
+            return string;
+        }
     }
     static createEmbed(params) {
         try {
