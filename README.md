@@ -1,5 +1,7 @@
 # EasyDiscordBot
-1.5.0
+2.0.0-beta1
+
+This version may contain some bugs since it hasn't been fully tested yet. Documentation for the latest stable release can be found [here](https://github.com/GRZ4NA/EasyDiscordBot/blob/15047369944340b19aa7255236c77dca4acd2ada/README.md). If you find a bug, typo etc, report it to me using the Issues tab on GitHub or make your own pull request.
 
 *Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 
@@ -26,6 +28,10 @@ npm i ezdiscordbot
 ```
 import { EasyDiscordBot } from 'ezdiscordbot';
 ```
+Additional modules that you can import from the package
+- stringProcessor - function - use it to replace square brackets expressions
+- DiscordBotCommand - class - another way to create commands (not recommended) (you have to push them to the `commandsList` manually)
+
 3. Insert the following line into your package.json file
 ```
 "type": "module"
@@ -89,18 +95,20 @@ Command arguments are located in the "command" property of every "message" objec
 **The caller has to meet at least 1 requirement to start a command.**
 
 ### Text processing
-This class has stringProcessor function built-in (**do not overwrite it**)
-It's being called every time your bot sends a message but you have to manually include it in your own commands.
-```
-bot.stringProcessor(string, message);
-```
-Arguments
-- string - string - a string that will be processed
-- message - object (Message) - a Message instance that will be used to replace `[command]`
-Variables (in square brackets) that can be replaced
+The following expressions will be replaced while sending a message, replying or using stringProcessor function in any other place
 - `[botName]` - replaced with your bot's name
 - `[prefix]` - replaced with bot's prefix
-- `[command]` - replaced with command's name (if message argument is present)
+- `[command]` - replaced with command's name
+
+Using string processor manually
+```
+import { stringProcessor } from 'ezdiscordbot';
+console.log(stringProcessor.bind(this)('[botName]')); // OUTPUTS YOUR BOT'S NAME FROM bot.name to the console
+```
+You can also use template strings
+```
+bot.addCommand('id', 'Displays your ID', 0, m => { m.reply(`Your ID is: ${m.author.id}`) });
+```
 
 ## Events
 There are 4 main events

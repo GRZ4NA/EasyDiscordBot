@@ -1,10 +1,12 @@
+import { stringProcessor } from '../stringProcessor.js';
+
 function createHelpCommandsList(botInstance) {
     const commands = [];
     for(let i = 0; i < botInstance.commandsList.length; i++) {
         if(!botInstance.commandsList[i].hidden) {
             const commandObj = { inline: false };
             commandObj.title = `${botInstance.config.prefix}${botInstance.commandsList[i].name} ${botInstance.commandsList[i].usage ? botInstance.commandsList[i].usage : ""}`;
-            commandObj.value = botInstance.stringProcessor(botInstance.commandsList[i].description);
+            commandObj.value = stringProcessor.bind(botInstance)(botInstance.commandsList[i].description);
             commands.push(commandObj);
         }
     }
@@ -17,7 +19,7 @@ async function createCommandHelp(botInstance, command, message) {
     if(command.usage && typeof command.usage == 'string' && command.usage.length !== 0) {
         fields.push({
             title: 'Usage:',
-            value: botInstance.config.prefix + command.name + ' ' + botInstance.stringProcessor(command.usage, { command: { isCommand: true, name: command.name } }),
+            value: botInstance.config.prefix + command.name + ' ' + stringProcessor.bind(botInstance)(command.usage, { command: { isCommand: true, name: command.name } }),
             inline: false
         });
     }

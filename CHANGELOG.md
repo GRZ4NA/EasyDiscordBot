@@ -85,3 +85,7 @@
     + you can only view informations about your own server (for security reasons)
 ## 1.5.0
 - some minor tweaks
+## 2.0.0-beta1
+- **removed backwards compatibility**
+- string processor is now separated from the class (you can import it using `import { stringProcessor } from 'ezdiscordbot'`)
+- string processor is now included in `Message.reply()` and `Message.channel.send()` methods (it will replace square bracket expressions automatically)
