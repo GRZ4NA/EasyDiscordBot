@@ -51,7 +51,7 @@ Connect your app to Discord using
 ```
 bot.start(port);
 ```
-Arguments:
+Arguments
 - port - string (optional) - if specified, the app will create an http server and start listening on specified port
 
 ## Commands
