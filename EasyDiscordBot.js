@@ -1,5 +1,5 @@
-import { Client, Guild, MessageEmbed, APIMessage, Message, User, GuildMember } from "discord.js";
-import { DiscordBotCommand } from './src/DiscordBotCommand.js';
+import { Client, Guild, MessageEmbed, APIMessage, User, GuildMember } from "discord.js";
+import { Command, CommandManager } from './src/commands.js';
 import { createCommandHelp, createHelpCommandsList } from './src/generators/helpMessage.js';
 import { generateShowCommand } from './src/generators/showCommand.js';
 import { stringProcessor } from './src/stringProcessor.js';
@@ -43,111 +43,114 @@ class EasyDiscordBot {
                     deleteTimeout: 3000
                 }
             };
-            this.commandsList = [
-                new DiscordBotCommand({
-                    name: 'help',
-                    description: "Displays list of available commands or detailed informations about specified command",
-                    permissions: 0,
-                    usage: '[command name (optional)]',
-                    hidden: false,
-                    execute: async m => {
-                        if(m.command.arguments[0]) {
-                            if(m.command.arguments[0].startsWith(this.config.prefix)) {
-                                m.command.arguments[0] = m.command.arguments[0].replace(this.config.prefix, '');
-                            }
-                            const command = this.getCommand(m.command.arguments[0]);
-                            if(command) {
-                                const fields = await createCommandHelp(this, command, m);
-                                const message = EasyDiscordBot.createEmbed({
-                                    title: command.name,
-                                    description: stringProcessor.bind(this)(command.description),
-                                    color: this.config.accentColor,
-                                    footer: command.hidden ? "Hidden" : "",
-                                    showTimestamp: true,
-                                    fields: fields
-                                });
-                                await m.channel.send(message);
-                            }
-                            else {
-                                throw new ReferenceError(stringProcessor.bind(this)(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}}))
-                            }
+            this.commands = new CommandManager();
+            //BACKWARDS COMPATIBILITY
+            const backwardsCompatibilityList = () => { return this.commands.list; };
+            this.commandsList = backwardsCompatibilityList();
+            //END
+            this.commands.add(new Command({
+                name: 'help',
+                description: "Displays list of available commands or detailed informations about specified command",
+                permissions: 0,
+                usage: '[command name (optional)]',
+                hidden: false,
+                execute: async m => {
+                    if(m.command.arguments[0]) {
+                        if(m.command.arguments[0].startsWith(this.config.prefix)) {
+                            m.command.arguments[0] = m.command.arguments[0].replace(this.config.prefix, '');
                         }
-                        else {
-                            const commands = createHelpCommandsList(this);
+                        const command = this.commands.get(m.command.arguments[0]);
+                        if(command) {
+                            const fields = await createCommandHelp(this, command, m);
                             const message = EasyDiscordBot.createEmbed({
-                                title: stringProcessor.bind(this)(this.config.helpMessage.header),
+                                title: command.name,
+                                description: stringProcessor.bind(this)(command.description),
                                 color: this.config.accentColor,
-                                description: stringProcessor.bind(this)(this.config.helpMessage.description),
-                                footer: this.name,
-                                fields: commands
+                                footer: command.hidden ? "Hidden" : "",
+                                showTimestamp: true,
+                                fields: fields
                             });
                             await m.channel.send(message);
                         }
+                        else {
+                            throw new ReferenceError(stringProcessor.bind(this)(`The command "[command]" does not exist.`, {command:{isCommand: true, name: m.command.arguments[0]}}))
+                        }
                     }
-                }),
-                new DiscordBotCommand({
-                    name: 'show',
-                    description: 'Displays information about the given user, channel, server or role',
-                    usage: '[user/role/channel/server ID/ping]',
-                    permissions: {
-                        permissions: 'ADMINISTRATOR'
-                    },
-                    hidden: true,
-                    execute: async m => {
-                        if(m.command.arguments[0]) {
-                            let messageBody;
-                            if(m.command.arguments[0].startsWith('<@!')) {
-                                const id = m.command.arguments[0].replace('<@!', '').replace('>', '');
-                                const user = await this.getUser(m.guild, id);
-                                if(user) {
-                                    messageBody = await generateShowCommand(user, this);
-                                }
+                    else {
+                        const commands = createHelpCommandsList(this);
+                        const message = EasyDiscordBot.createEmbed({
+                            title: stringProcessor.bind(this)(this.config.helpMessage.header),
+                            color: this.config.accentColor,
+                            description: stringProcessor.bind(this)(this.config.helpMessage.description),
+                            footer: this.name,
+                            fields: commands
+                        });
+                        await m.channel.send(message);
+                    }
+                }
+            }));
+            this.commands.add(new Command({
+                name: 'show',
+                description: 'Displays information about the given user, channel, server or role',
+                usage: '[user/role/channel/server ID/ping]',
+                permissions: {
+                    permissions: 'ADMINISTRATOR'
+                },
+                hidden: true,
+                execute: async m => {
+                    if(m.command.arguments[0]) {
+                        let messageBody;
+                        if(m.command.arguments[0].startsWith('<@!')) {
+                            const id = m.command.arguments[0].replace('<@!', '').replace('>', '');
+                            const user = await this.getUser(m.guild, id);
+                            if(user) {
+                                messageBody = await generateShowCommand(user, this);
                             }
-                            else if(m.command.arguments[0].startsWith('<@&')) {
-                                const id = m.command.arguments[0].replace('<@&', '').replace('>', '');
-                                const role = await this.getRole(m.guild, id);
-                                if(role) {
-                                    messageBody = await generateShowCommand(role, this);
-                                }
+                        }
+                        else if(m.command.arguments[0].startsWith('<@&')) {
+                            const id = m.command.arguments[0].replace('<@&', '').replace('>', '');
+                            const role = await this.getRole(m.guild, id);
+                            if(role) {
+                                messageBody = await generateShowCommand(role, this);
                             }
-                            else if(m.command.arguments[0].startsWith('<#')) {
-                                const id = m.command.arguments[0].replace('<#', '').replace('>', '');
-                                const textChannel = await this.getChannel(m.guild, id);
-                                if(textChannel) {
-                                    messageBody = await generateShowCommand(textChannel, this);
-                                }
+                        }
+                        else if(m.command.arguments[0].startsWith('<#')) {
+                            const id = m.command.arguments[0].replace('<#', '').replace('>', '');
+                            const textChannel = await this.getChannel(m.guild, id);
+                            if(textChannel) {
+                                messageBody = await generateShowCommand(textChannel, this);
                             }
-                            else {
-                                const id = m.command.arguments[0];
-                                const user = await this.getUser(m.guild, id);
-                                const guild = await this.getGuild(id);
-                                const role = await this.getRole(m.guild, id);
-                                const channel = await this.getChannel(m.guild, id);
-                                if(user) {
-                                    messageBody = await generateShowCommand(user, this);
-                                }
-                                else if(guild && guild.id == m.guild.id) {
-                                    messageBody = await generateShowCommand(guild, this);
-                                }
-                                else if(role) {
-                                    messageBody = await generateShowCommand(role, this);
-                                }
-                                else if(channel) {
-                                    messageBody = await generateShowCommand(channel, this);
-                                }
-                                else {
-                                    throw new ReferenceError(`The ID "${id}" has not been found in ${m.guild.name}`);
-                                }
-                            }
-                            const message = EasyDiscordBot.createEmbed(messageBody);
-                            await m.channel.send(message);
                         }
                         else {
-                            throw new ReferenceError('Object "[command]" has not been found in this server');
+                            const id = m.command.arguments[0];
+                            const user = await this.getUser(m.guild, id);
+                            const guild = await this.getGuild(id);
+                            const role = await this.getRole(m.guild, id);
+                            const channel = await this.getChannel(m.guild, id);
+                            if(user) {
+                                messageBody = await generateShowCommand(user, this);
+                            }
+                            else if(guild && guild.id == m.guild.id) {
+                                messageBody = await generateShowCommand(guild, this);
+                            }
+                            else if(role) {
+                                messageBody = await generateShowCommand(role, this);
+                            }
+                            else if(channel) {
+                                messageBody = await generateShowCommand(channel, this);
+                            }
+                            else {
+                                throw new ReferenceError(`The ID "${id}" has not been found in ${m.guild.name}`);
+                            }
                         }
+                        const message = EasyDiscordBot.createEmbed(messageBody);
+                        await m.channel.send(message);
                     }
-                })
-            ];
+                    else {
+                        throw new ReferenceError('Object "[command]" has not been found in this server');
+                    }
+                }
+            }));
             this.events = {
                 onReady: () => {
                     console.log('Bot is ready!');
@@ -247,12 +250,12 @@ class EasyDiscordBot {
                     }
                 }
                 else {
-                    for(let i = 0; i < this.commandsList.length; i++) {
-                        if(this.commandsList[i].keywords) {
-                            const commandIndex = this.commandsList[i].keywords.findIndex(kw => kw == message.content.split(' ')[0]);
+                    for(let i = 0; i < this.commands.list.length; i++) {
+                        if(this.commands.list[i].keywords) {
+                            const commandIndex = this.commands.list[i].keywords.findIndex(kw => kw == message.content.split(' ')[0]);
                             if(commandIndex !== -1) {
                                 message.command.isCommand = true;
-                                message.command.name = this.commandsList[i].name;
+                                message.command.name = this.commands.list[i].name;
                                 message.command.arguments = message.content.replace(message.content.split(' ')[0], '').split(',');
                                 for(let j = 0; j < message.command.arguments.length; j++) {
                                     message.command.arguments[j] = message.command.arguments[j].replace(' ', '');
@@ -264,7 +267,7 @@ class EasyDiscordBot {
                 }
                 if(message.command.isCommand && !message.author.bot) {
                     this.events.onCommand(message);
-                    const command = this.getCommand(message.command.name);
+                    const command = this.commands.get(message.command.name);
                     if(command) {
                         if(await this.permissionsProxy(message, command)) {
                             try {
@@ -305,18 +308,18 @@ class EasyDiscordBot {
                 }
             });
             if(!this.config.helpMessage || !this.config.helpMessage instanceof Object) {
-                const helpCommandIndex = this.commandsList.findIndex(c => c.name == 'help');
-                this.commandsList.splice(helpCommandIndex, 1);
+                const helpCommandIndex = this.commands.list.findIndex(c => c.name == 'help');
+                this.commands.list.splice(helpCommandIndex, 1);
             }
             else {
-                this.getCommand('help').hidden = typeof this.config.helpMessage.hidden == 'boolean' ? this.config.helpMessage.hidden : false;
+                this.commands.get('help').hidden = typeof this.config.helpMessage.hidden == 'boolean' ? this.config.helpMessage.hidden : false;
             }
             if(!this.config.showCommand || !this.config.showCommand instanceof Object || !this.config.showCommand.enabled) {
-                const showCommandIndex = this.commandsList.findIndex(c => c.name == 'show');
-                this.commandsList.splice(showCommandIndex, 1);
+                const showCommandIndex = this.commands.list.findIndex(c => c.name == 'show');
+                this.commands.list.splice(showCommandIndex, 1);
             }
             else {
-                this.getCommand('show').hidden = typeof this.config.showCommand.hidden == 'boolean' ? this.config.showCommand.hidden : true;
+                this.commands.get('show').hidden = typeof this.config.showCommand.hidden == 'boolean' ? this.config.showCommand.hidden : true;
             }
             await this.client.login(this.config.discordToken);
             if(this.config.botActivity && this.config.botActivity instanceof Object) {
@@ -329,33 +332,19 @@ class EasyDiscordBot {
         }
     }
     addCommand(name, description, permissions, callFunction, keywords, usage, hidden) {
+        //BACKWARDS COMPATIBILITY (DEPRECATED)
         try {
-            const commandObject = new DiscordBotCommand({
+            console.warn('WARN! This method is deprecated! Please use commands.add(options) instead.')
+            const options = {
                 name: name,
                 description: description,
                 permissions: permissions,
+                execute: callFunction,
                 keywords: keywords,
                 usage: usage,
-                execute: callFunction,
-                hidden: hidden
-            });
-            if(this.getCommand(commandObject.name)) {
-                throw new ReferenceError(`The command "${commandObject.name}" already exists in this instance.`);
-            }
-            if(commandObject.aliases) {
-                for(let i = 0; i < commandObject.aliases.length; i++) {
-                    if(this.getCommand(commandObject.aliases[i])) {
-                        console.warn(`The alias "${commandObject.aliases[i]}" is already registered as a command name or an alias for some other command in this instance. It will be removed from the "${commandObject.name}" command.`);
-                        commandObject.aliases.splice(i, 1);
-                        i--;
-                    }
-                }
-                if(commandObject.aliases.length === 0) {
-                    commandObject.aliases = undefined;
-                }
-            }
-            this.commandsList.push(commandObject);
-            return commandObject;   
+                hidden: hidden || false
+            };
+            return this.commands.add(options);
         }
         catch (e) {
             this.events.onError(e);
@@ -363,28 +352,9 @@ class EasyDiscordBot {
         }
     }
     getCommand(name) {
-        try {
-            if(typeof name == 'string') {
-                const command = this.commandsList.find(c => c.name == name);
-                if(command) {
-                    return command;
-                }
-                else {
-                    for(let i = 0; i < this.commandsList.length; i++) {
-                        if(this.commandsList[i].aliases) {
-                            const alias = this.commandsList[i].aliases.find(a => a == name);
-                            if(alias) {
-                                return this.commandsList[i];
-                            }
-                        }
-                    }
-                    throw new ReferenceError(`Command ${name} does not exist in this instance.`);
-                }
-            }
-        }
-        catch (e) {
-            return null;
-        }
+        //BACKWARDS COMPATIBILITY (DEPRECATED)
+        console.warn('WARN! This method is deprecated! Please use commands.get(name) instead.')
+        return this.commands.get(name);
     }
     async getGuild(id) {
         try {
@@ -565,4 +535,4 @@ class EasyDiscordBot {
     }
 }
 
-export { EasyDiscordBot, stringProcessor, DiscordBotCommand };
+export { EasyDiscordBot, stringProcessor, Command };

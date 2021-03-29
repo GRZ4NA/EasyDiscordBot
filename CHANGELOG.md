@@ -86,6 +86,14 @@
 ## 1.5.0
 - some minor tweaks
 ## 2.0.0-beta1
-- **removed backwards compatibility**
+- **no backwards compatibility** (`{admin: true}, all responses and old properties are not going to work anymore`)
 - string processor is now separated from the class (you can import it using `import { stringProcessor } from 'ezdiscordbot'`)
 - string processor is now included in `Message.reply()` and `Message.channel.send()` methods (it will replace square bracket expressions automatically)
+## 2.0.0-beta2
+- new command structure
+    + new "commands" property
+    + commandsList is being replaced with commands.list
+    + addCommand() is being replaced with commands.add() (new usage)
+    + getCommand() is being replaced with commands.get()
+    + old methods are still present and they can be used without any modifications (backwards compatible)
+    + more details in documentation

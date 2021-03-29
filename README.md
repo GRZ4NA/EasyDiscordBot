@@ -1,5 +1,7 @@
 # EasyDiscordBot
-2.0.0-beta1
+2.0.0-beta2
+
+[Changelog](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/CHANGELOG.md#200-beta2)
 
 This version may contain some bugs since it hasn't been fully tested yet. Documentation for the latest stable release can be found [here](https://github.com/GRZ4NA/EasyDiscordBot/blob/15047369944340b19aa7255236c77dca4acd2ada/README.md). If you find a bug, typo etc, report it to me using the Issues tab on GitHub or make your own pull request.
 
@@ -66,9 +68,9 @@ bot.config.helpMessage.hidden = true        # hide the "help" command;
 ```
 You can add your own commands by using
 ```
-bot.addCommand(name, description, permissions, callFunction, keywords, usage, hidden);
+bot.commands.add(options)
 ```
-Arguments
+Options
 - name
     + string - your command name that will be used to trigger the command
     + array (string)
@@ -76,10 +78,21 @@ Arguments
         * other elements are aliases that can also be used to trigger the command
 - description - string - command description that will appear in the help message
 - permissions - object or null - command usage permissions
-- callFunction - function - being called when using a command (first argument is a message object)
+- execute - function - being called when using a command (first argument is a message object)
 - keywords - array (string) - array of keywords that can trigger the commnand without prefix
 - usage - string - usage instructions that will be displayed in help message
 - hidden - boolean - if it's `true`, the command will not appear in the help message
+
+You can get a full list of commands in the instance from commands.list property
+```
+console.log(bot.commands.list); // Logs array of Command instances to console
+```
+
+To get a specified Command instance use commands.get(name)
+- name - string - command name
+```
+bot.commands.get('help').description = 'Help message'; // Changes description of the "help" command
+```
 
 ### Command arguments
 Command arguments are located in the "command" property of every "message" object.
@@ -103,7 +116,7 @@ The following expressions will be replaced while sending a message, replying or 
 Using string processor manually
 ```
 import { stringProcessor } from 'ezdiscordbot';
-console.log(stringProcessor.bind(this)('[botName]')); // OUTPUTS YOUR BOT'S NAME FROM bot.name to the console
+console.log(stringProcessor.bind(this)('[botName]')); // Logs your bot's name from the bot.name property to the console
 ```
 You can also use template strings
 ```
@@ -199,5 +212,3 @@ EasyDiscordBot.createEmbed(params);
 - Get user by ID - getUser(guild, id) - return Promise(Member or `null`)
     + guild - string (guild ID) or a Guild instance
     + id - string - user ID
-- Get command by name - getCommand(name) - returns command object from commands list or `null`
-    + name - string - command name

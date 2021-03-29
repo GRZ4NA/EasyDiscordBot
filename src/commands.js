@@ -1,6 +1,6 @@
 import { Role, GuildMember, User } from 'discord.js';
 
-class DiscordBotCommand {
+class Command {
     constructor(params) {
         //INITIALIZE
         this.name = undefined;
@@ -178,4 +178,74 @@ class DiscordBotCommand {
     }
 }
 
-export { DiscordBotCommand };
+class CommandManager {
+    constructor() {
+        this.list = [];
+    }
+    get(name) {
+        try {
+            if(typeof name == 'string') {
+                const command = this.list.find(c => c.name == name);
+                if(command) {
+                    return command;
+                }
+                else {
+                    for(let i = 0; i < this.list.length; i++) {
+                        if(this.list[i].aliases) {
+                            const alias = this.list[i].aliases.find(a => a == name);
+                            if(alias) {
+                                return this.list[i];
+                            }
+                        }
+                    }
+                    throw new ReferenceError(`Command ${name} does not exist in this instance.`);
+                }
+            }
+            else {
+                throw new TypeError('The first argument has to be a string');
+            }
+        }
+        catch (e) {
+            return null;
+        }
+    }
+    add(options) {
+        try {
+            let command;
+            if(options instanceof Command) {
+                command = options;
+            }
+            else if(typeof options == 'object') {
+                command = new Command(options);
+            }
+            else {
+                throw new TypeError('The first argument has to be a Command instance or an object');
+            }
+
+            if(this.get(command.name)) {
+                throw new ReferenceError(`The command with name ${command.name} already exists in this instance.`);
+            }
+            if(command.aliases && Array.isArray(command.aliases)) {
+                for(let i = 0; i < command.aliases.length; i++) {
+                    if(this.get(command.aliases[i])) {
+                        console.warn(`The alias "${command.aliases[i]}" is already registered as a command name or an alias for some other command in this instance. It will be removed from the "${command.name}" command.`);
+                        command.aliases.splice(i, 1);
+                        i--;
+                    }
+                }
+                if(command.aliases.length == 0) {
+                    command.aliases = undefined;
+                }
+            }
+            if(command instanceof Command) {
+                this.list.push(command);
+            }
+        }
+        catch (e) {
+            console.error(e);
+            return null;     
+        }
+    }
+}
+
+export { CommandManager, Command };
