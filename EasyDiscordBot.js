@@ -213,37 +213,37 @@ class EasyDiscordBot {
             this.client.on('error', e => this.events.onError(e));
             this.client.on('message', async message => {
                 message.command = {};
+                message.reply = (content, options) => {
+                    content = stringProcessor.bind(this)(content, message);
+                    return message.channel.send(
+                        content instanceof APIMessage ? content : APIMessage.transformOptions(content, options, { reply: message.member || message.author }),
+                    );
+                }
+                message.channel.send = async (content, options) => {
+                    if(message.channel instanceof User || message.channel instanceof GuildMember) {
+                        return message.channel.createDM().then(dm => dm.send.bind(this)(stringProcessor.bind(this)(content, message), options));
+                    }
+                    let apiMessage;
+                    if(content instanceof APIMessage) {
+                        apiMessage = content.resolveData();
+                    } 
+                    else {
+                        apiMessage = APIMessage.create(message.channel, stringProcessor.bind(this)(content, message), options).resolveData();
+                        if(Array.isArray(apiMessage.data.content)) {
+                            return Promise.all(apiMessage.split().map(message.channel.send.bind(message.channel)));
+                        }
+                    }
+                    const { data, files } = await apiMessage.resolveFiles();
+                    return this.client.api.channels[message.channel.id].messages
+                        .post({ data, files })
+                        .then(d => message.channel.client.actions.MessageCreate.handle(d).message);
+                }
                 if(message.content.startsWith(this.config.prefix) && !message.content.replace(this.config.prefix, '').startsWith(this.config.prefix)) {
                     message.command.isCommand = true;
                     message.command.name = message.content.replace(this.config.prefix, '').split(' ')[0];
                     message.command.arguments = message.content.replace(this.config.prefix, '').replace(message.command.name, '').split(',');
                     for(let i = 0; i < message.command.arguments.length; i++) {
                         message.command.arguments[i] = message.command.arguments[i].replace(' ', '');
-                    }
-                    message.reply = (content, options) => {
-                        content = stringProcessor.bind(this)(content, message);
-                        return message.channel.send(
-                            content instanceof APIMessage ? content : APIMessage.transformOptions(content, options, { reply: message.member || message.author }),
-                        );
-                    }
-                    message.channel.send = async (content, options) => {
-                        if(message.channel instanceof User || message.channel instanceof GuildMember) {
-                            return message.channel.createDM().then(dm => dm.send.bind(this)(stringProcessor.bind(this)(content, message), options));
-                        }
-                        let apiMessage;
-                        if(content instanceof APIMessage) {
-                            apiMessage = content.resolveData();
-                        } 
-                        else {
-                            apiMessage = APIMessage.create(message.channel, stringProcessor.bind(this)(content, message), options).resolveData();
-                            if(Array.isArray(apiMessage.data.content)) {
-                                return Promise.all(apiMessage.split().map(message.channel.send.bind(message.channel)));
-                            }
-                        }
-                        const { data, files } = await apiMessage.resolveFiles();
-                        return this.client.api.channels[message.channel.id].messages
-                            .post({ data, files })
-                            .then(d => message.channel.client.actions.MessageCreate.handle(d).message);
                     }
                 }
                 else {
@@ -256,31 +256,6 @@ class EasyDiscordBot {
                                 message.command.arguments = message.content.replace(message.content.split(' ')[0], '').split(',');
                                 for(let j = 0; j < message.command.arguments.length; j++) {
                                     message.command.arguments[j] = message.command.arguments[j].replace(' ', '');
-                                }
-                                message.reply = (content, options) => {
-                                    content = stringProcessor.bind(this)(content, message);
-                                    return message.channel.send(
-                                        content instanceof APIMessage ? content : APIMessage.transformOptions(content, options, { reply: message.member || message.author }),
-                                    );
-                                }
-                                message.channel.send = async (content, options) => {
-                                    if(message.channel instanceof User || message.channel instanceof GuildMember) {
-                                        return message.channel.createDM().then(dm => dm.send.bind(this, stringProcessor.bind(this)(content, message), options));
-                                    }
-                                    let apiMessage;
-                                    if(content instanceof APIMessage) {
-                                        apiMessage = content.resolveData();
-                                    } 
-                                    else {
-                                        apiMessage = APIMessage.create(message.channel, stringProcessor.bind(this)(content, message), options).resolveData();
-                                        if(Array.isArray(apiMessage.data.content)) {
-                                            return Promise.all(apiMessage.split().map(message.channel.send.bind(message.channel)));
-                                        }
-                                    }
-                                    const { data, files } = await apiMessage.resolveFiles();
-                                    return this.client.api.channels[message.channel.id].messages
-                                        .post({ data, files })
-                                        .then(d => message.channel.client.actions.MessageCreate.handle(d).message);
                                 }
                             }
                         }
