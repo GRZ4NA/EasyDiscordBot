@@ -68,28 +68,29 @@
 - stability improvement - your bot won't crash if a command function throws an error. It will display an error message to the user instead.
 ## 1.4.2
 - change from 1.4.1 now works with asynchronous functions as well (I forgot to add "await" in one place :D)
-## 1.5.0-beta1
+## 1.5.0
+### beta1
 - added command aliases
     + add aliases by inserting an array into the first argument of the addCommand method (first element of the array is your command's name)
     + aliases will display in the help message
     + getCommand and addCommand methods have been reworked to handle this new feature properly (the usage is still the same and they are backwards compatible)
 - command permissions and keywords in "help" message are now being shown in separated lines (1 per line)
 - few tweaks and code cleanups
-## 1.5.0-beta2
+### beta2
 - fixed a bug that made the prefix stack up and make aliases unusable + caused "help" command to display incorrectly
 - changed the appearance of "command does not exist" message in "help" command to an error style
 - "help" command can now remove prefix if it was passed with an argument (for example: `!help !show` is going to act as intended now)
-## 1.5.0-beta3
+### beta3
 - "show" command can now display informations about servers (guilds)
     + call it by using `show [your server ID]`
     + you can only view informations about your own server (for security reasons)
-## 1.5.0
+### FINAL
 - some minor tweaks
-## 2.0.0-beta1
-- **no backwards compatibility** (`{admin: true}, all responses and old properties are not going to work anymore`)
+## 2.0.0 (this version is not compatible with features marked as deprecated in earlier versions)
+### beta1
 - string processor is now separated from the class (you can import it using `import { stringProcessor } from 'ezdiscordbot'`)
 - string processor is now included in `Message.reply()` and `Message.channel.send()` methods (it will replace square bracket expressions automatically)
-## 2.0.0-beta2
+### beta2
 - new command structure
     + new "commands" property
     + commandsList is being replaced with commands.list
@@ -97,3 +98,5 @@
     + getCommand() is being replaced with commands.get()
     + old methods are still present and they can be used without any modifications (backwards compatible)
     + more details in documentation
+### FINAL
+- minor tweaks

@@ -3,6 +3,7 @@ import { Command, CommandManager } from './src/commands.js';
 import { createCommandHelp, createHelpCommandsList } from './src/generators/helpMessage.js';
 import { generateShowCommand } from './src/generators/showCommand.js';
 import { stringProcessor } from './src/stringProcessor.js';
+import { checkCommandAccess } from './src/permissions.js';
 import http from 'http';
 
 class EasyDiscordBot {
@@ -269,7 +270,7 @@ class EasyDiscordBot {
                     this.events.onCommand(message);
                     const command = this.commands.get(message.command.name);
                     if(command) {
-                        if(await this.permissionsProxy(message, command)) {
+                        if(await checkCommandAccess(message, command)) {
                             try {
                                 await command.execute(message);   
                             } catch (e) {
@@ -334,7 +335,7 @@ class EasyDiscordBot {
     addCommand(name, description, permissions, callFunction, keywords, usage, hidden) {
         //BACKWARDS COMPATIBILITY (DEPRECATED)
         try {
-            console.warn('WARN! This method is deprecated! Please use commands.add(options) instead.')
+            console.warn('WARN! EasyDiscordBot.addCommand() is deprecated! Please use EasyDiscordBot.commands.add(options) instead.')
             const options = {
                 name: name,
                 description: description,
@@ -353,7 +354,7 @@ class EasyDiscordBot {
     }
     getCommand(name) {
         //BACKWARDS COMPATIBILITY (DEPRECATED)
-        console.warn('WARN! This method is deprecated! Please use commands.get(name) instead.')
+        console.warn('WARN! EasyDiscordBot.getCommand() is deprecated! Please use EasyDiscordBot.commands.get(name) instead.')
         return this.commands.get(name);
     }
     async getGuild(id) {
@@ -470,43 +471,6 @@ class EasyDiscordBot {
         }
         catch (e) {
             return null;
-        }
-    }
-    async permissionsProxy(message, command) {
-        try {
-            if(command.permissions) {
-                if(command.permissions.users && command.permissions.users instanceof Array) {
-                    if(command.permissions.users.findIndex(u => u == message.author.id) !== -1) {
-                        return true;
-                    }
-                }
-                if(command.permissions.roles && command.permissions.roles instanceof Array) {
-                    let userRoles = message.member.roles.cache;
-                    userRoles = userRoles.array();
-                    for(let i = 0; i < userRoles.length; i++) {
-                        if(command.permissions.roles.findIndex(r => r == userRoles[i]) !== -1) {
-                            return true;
-                        }
-                    }
-                }
-                if(command.permissions.permissions && command.permissions.permissions instanceof Array) {
-                    const permissionList = command.permissions.permissions;
-                    const userPermissions = message.member.permissions.toArray();
-                    for(let i = 0; i < userPermissions.length; i++) {
-                        if(permissionList.findIndex(p => p.toUpperCase() == userPermissions[i]) !== -1) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-            else {
-                return true;
-            }
-        }
-        catch (e) {
-            console.error(e);
-            return false;
         }
     }
     static createEmbed(params) {

@@ -1,9 +1,7 @@
 # EasyDiscordBot
-2.0.0-beta2
+2.0.0
 
-[Changelog](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/CHANGELOG.md#200-beta2)
-
-This version may contain some bugs since it hasn't been fully tested yet. Documentation for the latest stable release can be found [here](https://github.com/GRZ4NA/EasyDiscordBot/blob/15047369944340b19aa7255236c77dca4acd2ada/README.md). If you find a bug, typo etc, report it to me using the Issues tab on GitHub or make your own pull request.
+[Changelog](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/CHANGELOG.md#200)
 
 *Documentation might change without patching the package on npmjs. Please read [README.md](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/README.md) on the GitHub repo to get the latest documentation.*
 
