@@ -1,4 +1,5 @@
 # EasyDiscordBot
+## DEPRECATED! Releasing new, TypeScript based Discord.js wrapper soon.
 2.0.0
 
 [Changelog](https://github.com/GRZ4NA/EasyDiscordBot/blob/master/CHANGELOG.md#200)
